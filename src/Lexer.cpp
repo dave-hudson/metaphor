@@ -6,7 +6,7 @@ Lexer::Lexer(const std::string& input)
     : input(input), position(0), current_line(1), current_column(1) {
 }
 
-Token Lexer::getNextToken() {
+auto Lexer::getNextToken() -> Token {
     while (position < input.size()) {
         char ch = input[position];
 
@@ -28,7 +28,7 @@ Token Lexer::getNextToken() {
     return Token(TokenType::END_OF_FILE, "", current_line, current_column);
 }
 
-Token Lexer::readNewline() {
+auto Lexer::readNewline() -> Token {
     Token token(TokenType::NEWLINE, "\n", current_line, current_column);
     position++;
     current_line++;
@@ -36,7 +36,7 @@ Token Lexer::readNewline() {
     return token;
 }
 
-Token Lexer::readWhitespace() {
+auto Lexer::readWhitespace() -> Token{
     int start_column = current_column;
     size_t start_position = position;
 
@@ -48,7 +48,7 @@ Token Lexer::readWhitespace() {
     return Token(TokenType::WHITESPACE, input.substr(start_position, position - start_position), current_line, start_column);
 }
 
-Token Lexer::readKeywordOrText() {
+auto Lexer::readKeywordOrText() -> Token {
     int start_column = current_column;
     size_t start_position = position;
 
@@ -71,7 +71,7 @@ Token Lexer::readKeywordOrText() {
     return Token(TokenType::TEXT, input.substr(start_position, position - start_position), current_line, start_column);
 }
 
-Token Lexer::readComment() {
+auto Lexer::readComment() -> Token {
     int start_column = current_column;
     size_t start_position = position;
 

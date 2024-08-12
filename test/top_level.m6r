@@ -1,0 +1,12 @@
+# top_level.m6r
+
+Feature: Top Level Feature
+  This is the top-level feature file.
+
+Include: second_level.m6r
+
+Scenario: Top Level Scenario
+  Given: I am testing the top-level feature
+  When: I include the second level feature
+  Then: it should process correctly
+

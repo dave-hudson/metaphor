@@ -5,7 +5,7 @@
 Parser::Parser() : current_token(TokenType::END_OF_FILE, "", 0, 0) {
 }
 
-void Parser::parse(const std::string& initial_file) {
+auto Parser::parse(const std::string& initial_file) -> void {
     loadFile(initial_file);
 
     while (nextSyntacticToken().type != TokenType::END_OF_FILE) {
@@ -21,7 +21,7 @@ void Parser::parse(const std::string& initial_file) {
     }
 }
 
-void Parser::loadFile(const std::string& filename) {
+auto Parser::loadFile(const std::string& filename) -> void {
     std::filesystem::path canonical_filename = std::filesystem::absolute(filename);
 
     if (processed_files.find(canonical_filename) != processed_files.end()) {
@@ -43,7 +43,7 @@ void Parser::loadFile(const std::string& filename) {
     lexers.push_back({std::make_unique<Lexer>(content), canonical_filename.string()});
 }
 
-Token Parser::nextToken() {
+auto Parser::nextToken() -> Token {
     while (!lexers.empty()) {
         auto& lexerWithFilename = lexers.back();
         current_token = lexerWithFilename.lexer->getNextToken();
@@ -58,7 +58,7 @@ Token Parser::nextToken() {
     return Token(TokenType::END_OF_FILE, "", 0, 0);
 }
 
-Token Parser::nextSyntacticToken() {
+auto Parser::nextSyntacticToken() -> Token {
     Token token = nextToken();
 
     while (token.type == TokenType::COMMENT || token.type == TokenType::WHITESPACE) {
@@ -68,7 +68,7 @@ Token Parser::nextSyntacticToken() {
     return token;
 }
 
-void Parser::handleInclude() {
+auto Parser::handleInclude() -> void {
     if (nextSyntacticToken().type == TokenType::TEXT) {
         std::string filename = current_token.value;
         std::cout << "Including file: " << filename << std::endl;
@@ -78,7 +78,7 @@ void Parser::handleInclude() {
     }
 }
 
-void Parser::raiseSyntaxError(const std::string& message) {
+auto Parser::raiseSyntaxError(const std::string& message) -> void {
     const auto& token = current_token;
     std::string current_file = lexers.empty() ? "Unknown" : lexers.back().filename;
     throw std::runtime_error(message + " Found '" + token.value + "' in file " + current_file +

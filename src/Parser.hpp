@@ -21,11 +21,11 @@ private:
         std::string filename;
     };
 
-    void loadFile(const std::string& filename);
-    Token nextToken();
-    Token nextSyntacticToken();
-    void handleInclude();
-    void raiseSyntaxError(const std::string& message);
+    auto loadFile(const std::string& filename) -> void;
+    auto nextToken() -> Token;
+    auto nextSyntacticToken() -> Token;
+    auto handleInclude() -> void;
+    auto raiseSyntaxError(const std::string& message) -> void;
 
     std::vector<LexerWithFilename> lexers;
     Token current_token;

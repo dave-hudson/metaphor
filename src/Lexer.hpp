@@ -16,10 +16,10 @@ public:
     }
 
 private:
-    Token readNewline();
-    Token readWhitespace();
-    Token readKeywordOrText();
-    Token readComment();
+    auto readNewline() -> Token;
+    auto readWhitespace() -> Token;
+    auto readKeywordOrText() -> Token;
+    auto readComment() -> Token;
 
     std::string input;
     size_t position;
