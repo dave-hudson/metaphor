@@ -30,7 +30,6 @@ private:
 
     auto loadFile(const std::string& filename) -> void;
     auto getNextToken() -> Token;
-    auto getNextSyntaxToken() -> Token;
     auto handleInclude() -> void;
     auto handleKeyword() -> void;
     auto raiseSyntaxError(const std::string& message) -> void;
