@@ -2,21 +2,53 @@
 
 #include "Parser.hpp"
 
-Parser::Parser() : currentToken(TokenType::END_OF_FILE, "", 0, 0), localIndentLevel(0), fileIndentLevel(0) {
+Parser::Parser() :
+        currentToken(TokenType::END_OF_FILE, "", 0, 0),
+        localIndentLevel(0),
+        fileIndentLevel(0),
+        parseState(ParserState::NONE),
+        keywordType(TokenType::END_OF_FILE) {
 }
 
 auto Parser::parse(const std::string& initial_file) -> void {
     loadFile(initial_file);
 
-    while (getNextSyntaxToken().type != TokenType::END_OF_FILE) {
-        const auto& token = currentToken;
+    while (true) {
+        const auto& token = getNextToken();
 
         std::cout << "Processing token: " << token << " in file: " << lexers.back().filename << std::endl;
 
-        if (token.type == TokenType::INCLUDE) {
-            handleInclude();
-        } else {
-            // Handle other tokens as necessary
+        switch (token.type) {
+        case TokenType::NEWLINE:
+            parseState = ParserState::NONE;
+            break;
+
+        case TokenType::WHITESPACE:
+        case TokenType::COMMENT:
+            // We do nothing for whitespace or comments.
+            break;
+
+        case TokenType::TEXT:
+            if (parseState == ParserState::KEYWORD) {
+                parseState = ParserState::TEXT;
+                handleKeyword();
+            }
+            break;
+
+        case TokenType::INCLUDE:
+        case TokenType::REQUIRE:
+            if (parseState == ParserState::NONE) {
+                parseState = ParserState::KEYWORD;
+                keywordType = token.type;
+                break;
+            }
+
+            parseState = ParserState::ERROR;
+            raiseSyntaxError("Second keyword found on line");
+            break;
+
+        case TokenType::END_OF_FILE:
+            return;
         }
     }
 }
@@ -59,21 +91,7 @@ auto Parser::getNextToken() -> Token {
     return Token(TokenType::END_OF_FILE, "", 0, 0);
 }
 
-auto Parser::getNextSyntaxToken() -> Token {
-    Token token = getNextToken();
-
-    while (token.type == TokenType::COMMENT || token.type == TokenType::WHITESPACE) {
-        token = getNextToken();
-    }
-
-    return token;
-}
-
 auto Parser::handleInclude() -> void {
-    if (getNextSyntaxToken().type != TokenType::TEXT) {
-        raiseSyntaxError("Expected a filename (TEXT token) after Include:");
-    }
-
     std::string filename = currentToken.value;
     std::cout << "Including file: " << filename << std::endl;
 
@@ -90,10 +108,21 @@ auto Parser::handleInclude() -> void {
     localIndentLevel = prevLocalIndentLevel;
 }
 
+auto Parser::handleKeyword() -> void {
+    switch (keywordType) {
+    case TokenType::INCLUDE:
+        handleInclude();
+        break;
+
+    default:
+        break;
+    }
+}
+
 auto Parser::raiseSyntaxError(const std::string& message) -> void {
     const auto& token = currentToken;
     std::string current_file = lexers.empty() ? "Unknown" : lexers.back().filename;
-    throw std::runtime_error(message + " Found '" + token.value + "' in file " + current_file +
+    throw std::runtime_error(message + ": Found '" + token.value + "' in file " + current_file +
                                 ", line " + std::to_string(token.line) +
                                 ", column " + std::to_string(token.column));
 }

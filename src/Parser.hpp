@@ -10,6 +10,13 @@
 
 #include "Lexer.hpp"
 
+enum class ParserState {
+    NONE,
+    KEYWORD,
+    TEXT,
+    ERROR
+};
+
 class Parser {
 public:
     Parser();
@@ -25,6 +32,7 @@ private:
     auto getNextToken() -> Token;
     auto getNextSyntaxToken() -> Token;
     auto handleInclude() -> void;
+    auto handleKeyword() -> void;
     auto raiseSyntaxError(const std::string& message) -> void;
 
     std::vector<LexerWithFilename> lexers;
@@ -32,6 +40,8 @@ private:
     std::set<std::filesystem::path> processedFiles;
     int localIndentLevel;               // Indent level withing the current file
     int fileIndentLevel;                // Base indent level for the current file
+    ParserState parseState;             // The current parser state
+    TokenType keywordType;              // The current keyword being processed
 };
 
 #endif // __PARSER_HPP

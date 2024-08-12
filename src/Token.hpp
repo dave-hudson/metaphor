@@ -5,17 +5,7 @@
 #include <ostream>
 
 enum class TokenType {
-    FEATURE,
-    BACKGROUND,
-    SCENARIO,
-    GIVEN,
-    WHEN,
-    THEN,
-    AND,
-    BUT,
-    AS,
-    I,
-    SO,
+    REQUIRE,
     INCLUDE,
     COMMENT,
     NEWLINE,

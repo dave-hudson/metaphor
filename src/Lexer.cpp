@@ -29,7 +29,7 @@ auto Lexer::getNextToken() -> Token {
 }
 
 auto Lexer::readNewline() -> Token {
-    Token token(TokenType::NEWLINE, "\n", currentLine, currentColumn);
+    Token token(TokenType::NEWLINE, "", currentLine, currentColumn);
     position++;
     currentLine++;
     currentColumn = 1;

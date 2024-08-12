@@ -24,17 +24,7 @@ private:
     int currentColumn;
 
     const std::map<std::string, TokenType> keyword_map = {
-        {"Feature:", TokenType::FEATURE},
-        {"Background:", TokenType::BACKGROUND},
-        {"Scenario:", TokenType::SCENARIO},
-        {"Given:", TokenType::GIVEN},
-        {"When:", TokenType::WHEN},
-        {"Then:", TokenType::THEN},
-        {"And:", TokenType::AND},
-        {"But:", TokenType::BUT},
-        {"As:", TokenType::AS},
-        {"I:", TokenType::I},
-        {"So:", TokenType::SO},
+        {"Require:", TokenType::REQUIRE},
         {"Include:", TokenType::INCLUDE}
     };
 };
