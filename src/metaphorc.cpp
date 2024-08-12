@@ -12,7 +12,7 @@ void processFile(const std::string& filePath) {
 
 void printUsage(const char* programName) {
     std::cerr << "Usage: " << programName << " <file>\n"
-              << "metaphorc: Metaphor compiler" << std::endl;
+        << "metaphorc: Metaphor compiler" << std::endl;
 }
 
 int main(int argc, char* argv[]) {

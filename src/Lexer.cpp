@@ -80,4 +80,3 @@ Token Lexer::readComment() {
 
     return Token(TokenType::COMMENT, input.substr(start_position, position - start_position), current_line, start_column);
 }
-

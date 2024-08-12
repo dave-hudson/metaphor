@@ -81,7 +81,6 @@ void Parser::raiseSyntaxError(const std::string& message) {
     const auto& token = current_token;
     std::string current_file = lexers.empty() ? "Unknown" : lexers.back().filename;
     throw std::runtime_error(message + " Found '" + token.value + "' in file " + current_file +
-                             ", line " + std::to_string(token.line) +
-                             ", column " + std::to_string(token.column));
+                                ", line " + std::to_string(token.line) +
+                                ", column " + std::to_string(token.column));
 }
-

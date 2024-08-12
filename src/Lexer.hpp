@@ -4,7 +4,7 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <ostream>  // Include this to support operator<<
+#include <ostream>
 
 enum class TokenType {
     FEATURE,
@@ -23,7 +23,7 @@ enum class TokenType {
     NEWLINE,
     WHITESPACE,
     TEXT,
-    END_OF_FILE  // Rename EOF to avoid conflict with stdio.h
+    END_OF_FILE
 };
 
 class Token {
@@ -33,8 +33,8 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const Token& token) {
         os << "Token(type=" << static_cast<int>(token.type)
-           << ", value=\"" << token.value << "\", line=" << token.line
-           << ", column=" << token.column << ")";
+            << ", value=\"" << token.value << "\", line=" << token.line
+            << ", column=" << token.column << ")";
         return os;
     }
 
@@ -49,7 +49,9 @@ public:
     Lexer(const std::string& input);
 
     Token getNextToken();
-    int getCurrentLine() const { return current_line; }  // Getter for current_line
+    int getCurrentLine() const {
+        return current_line;
+    }
 
 private:
     Token readNewline();
@@ -79,4 +81,3 @@ private:
 };
 
 #endif
-
