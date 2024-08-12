@@ -1,2 +1,5 @@
 # Ignore temp files
 *~
+
+# Ignore output files
+build/*
