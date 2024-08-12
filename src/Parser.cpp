@@ -2,14 +2,14 @@
 
 #include "Parser.hpp"
 
-Parser::Parser() : current_token(TokenType::END_OF_FILE, "", 0, 0) {
+Parser::Parser() : currentToken(TokenType::END_OF_FILE, "", 0, 0), localIndentLevel(0), fileIndentLevel(0) {
 }
 
 auto Parser::parse(const std::string& initial_file) -> void {
     loadFile(initial_file);
 
-    while (nextSyntacticToken().type != TokenType::END_OF_FILE) {
-        const auto& token = current_token;
+    while (getNextSyntaxToken().type != TokenType::END_OF_FILE) {
+        const auto& token = currentToken;
 
         std::cout << "Processing token: " << token << " in file: " << lexers.back().filename << std::endl;
 
@@ -24,11 +24,11 @@ auto Parser::parse(const std::string& initial_file) -> void {
 auto Parser::loadFile(const std::string& filename) -> void {
     std::filesystem::path canonical_filename = std::filesystem::absolute(filename);
 
-    if (processed_files.find(canonical_filename) != processed_files.end()) {
+    if (processedFiles.find(canonical_filename) != processedFiles.end()) {
         throw std::runtime_error("Infinite loop detected: '" + canonical_filename.string() + "' has already been processed.");
     }
 
-    processed_files.insert(canonical_filename);
+    processedFiles.insert(canonical_filename);
 
     if (!std::filesystem::exists(canonical_filename)) {
         throw std::runtime_error("File not found: " + canonical_filename.string());
@@ -43,43 +43,55 @@ auto Parser::loadFile(const std::string& filename) -> void {
     lexers.push_back({std::make_unique<Lexer>(content), canonical_filename.string()});
 }
 
-auto Parser::nextToken() -> Token {
+auto Parser::getNextToken() -> Token {
     while (!lexers.empty()) {
         auto& lexerWithFilename = lexers.back();
-        current_token = lexerWithFilename.lexer->getNextToken();
+        currentToken = lexerWithFilename.lexer->getNextToken();
 
-        if (current_token.type == TokenType::END_OF_FILE) {
+        if (currentToken.type == TokenType::END_OF_FILE) {
             lexers.pop_back();
-        } else {
-            return current_token;
+            continue;
         }
+
+        return currentToken;
     }
 
     return Token(TokenType::END_OF_FILE, "", 0, 0);
 }
 
-auto Parser::nextSyntacticToken() -> Token {
-    Token token = nextToken();
+auto Parser::getNextSyntaxToken() -> Token {
+    Token token = getNextToken();
 
     while (token.type == TokenType::COMMENT || token.type == TokenType::WHITESPACE) {
-        token = nextToken();
+        token = getNextToken();
     }
 
     return token;
 }
 
 auto Parser::handleInclude() -> void {
-    if (nextSyntacticToken().type == TokenType::TEXT) {
-        std::string filename = current_token.value;
-        std::cout << "Including file: " << filename << std::endl;
-        loadFile(filename);
-    } else {
+    if (getNextSyntaxToken().type != TokenType::TEXT) {
         raiseSyntaxError("Expected a filename (TEXT token) after Include:");
     }
+
+    std::string filename = currentToken.value;
+    std::cout << "Including file: " << filename << std::endl;
+
+    // Preserve the current indent levels for when we return for processing the file, and update
+    // so we're tracking the correct starting indent levels for the file.
+    auto prevFileIndentLevel = fileIndentLevel;
+    auto prevLocalIndentLevel = localIndentLevel;
+    fileIndentLevel += localIndentLevel;
+    localIndentLevel = 0;
+    loadFile(filename);
+
+    // Restore our previous indent levels.
+    fileIndentLevel = prevFileIndentLevel;
+    localIndentLevel = prevLocalIndentLevel;
 }
 
 auto Parser::raiseSyntaxError(const std::string& message) -> void {
-    const auto& token = current_token;
+    const auto& token = currentToken;
     std::string current_file = lexers.empty() ? "Unknown" : lexers.back().filename;
     throw std::runtime_error(message + " Found '" + token.value + "' in file " + current_file +
                                 ", line " + std::to_string(token.line) +

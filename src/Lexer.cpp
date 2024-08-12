@@ -3,7 +3,7 @@
 #include "Lexer.hpp"
 
 Lexer::Lexer(const std::string& input)
-    : input(input), position(0), current_line(1), current_column(1) {
+    : input(input), position(0), currentLine(1), currentColumn(1) {
 }
 
 auto Lexer::getNextToken() -> Token {
@@ -25,60 +25,60 @@ auto Lexer::getNextToken() -> Token {
         return readKeywordOrText();
     }
 
-    return Token(TokenType::END_OF_FILE, "", current_line, current_column);
+    return Token(TokenType::END_OF_FILE, "", currentLine, currentColumn);
 }
 
 auto Lexer::readNewline() -> Token {
-    Token token(TokenType::NEWLINE, "\n", current_line, current_column);
+    Token token(TokenType::NEWLINE, "\n", currentLine, currentColumn);
     position++;
-    current_line++;
-    current_column = 1;
+    currentLine++;
+    currentColumn = 1;
     return token;
 }
 
 auto Lexer::readWhitespace() -> Token{
-    int start_column = current_column;
+    int start_column = currentColumn;
     size_t start_position = position;
 
     while (position < input.size() && isspace(input[position]) && input[position] != '\n') {
         position++;
-        current_column++;
+        currentColumn++;
     }
 
-    return Token(TokenType::WHITESPACE, input.substr(start_position, position - start_position), current_line, start_column);
+    return Token(TokenType::WHITESPACE, input.substr(start_position, position - start_position), currentLine, start_column);
 }
 
 auto Lexer::readKeywordOrText() -> Token {
-    int start_column = current_column;
+    int start_column = currentColumn;
     size_t start_position = position;
 
     while (position < input.size() && !isspace(input[position]) && input[position] != '\n') {
         position++;
-        current_column++;
+        currentColumn++;
     }
 
     std::string word = input.substr(start_position, position - start_position);
 
     if (keyword_map.find(word) != keyword_map.end()) {
-        return Token(keyword_map.at(word), word, current_line, start_column);
+        return Token(keyword_map.at(word), word, currentLine, start_column);
     }
 
     while (position < input.size() && input[position] != '\n' && input[position] != '#') {
         position++;
-        current_column++;
+        currentColumn++;
     }
 
-    return Token(TokenType::TEXT, input.substr(start_position, position - start_position), current_line, start_column);
+    return Token(TokenType::TEXT, input.substr(start_position, position - start_position), currentLine, start_column);
 }
 
 auto Lexer::readComment() -> Token {
-    int start_column = current_column;
+    int start_column = currentColumn;
     size_t start_position = position;
 
     while (position < input.size() && input[position] != '\n') {
         position++;
-        current_column++;
+        currentColumn++;
     }
 
-    return Token(TokenType::COMMENT, input.substr(start_position, position - start_position), current_line, start_column);
+    return Token(TokenType::COMMENT, input.substr(start_position, position - start_position), currentLine, start_column);
 }

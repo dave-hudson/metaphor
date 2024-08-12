@@ -10,10 +10,7 @@ class Lexer {
 public:
     Lexer(const std::string& input);
 
-    Token getNextToken();
-    int getCurrentLine() const {
-        return current_line;
-    }
+    auto getNextToken() -> Token;
 
 private:
     auto readNewline() -> Token;
@@ -23,8 +20,8 @@ private:
 
     std::string input;
     size_t position;
-    int current_line;
-    int current_column;
+    int currentLine;
+    int currentColumn;
 
     const std::map<std::string, TokenType> keyword_map = {
         {"Feature:", TokenType::FEATURE},
