@@ -1,5 +1,6 @@
-#include "Lexer.hpp"
 #include <cctype>
+
+#include "Lexer.hpp"
 
 Lexer::Lexer(const std::string& input)
     : input(input), position(0), current_line(1), current_column(1) {}

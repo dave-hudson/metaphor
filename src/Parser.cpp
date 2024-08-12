@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "Parser.hpp"
 
 Parser::Parser() : current_token(TokenType::END_OF_FILE, "", 0, 0) {
