@@ -3,7 +3,8 @@
 #include "Lexer.hpp"
 
 Lexer::Lexer(const std::string& input)
-    : input(input), position(0), current_line(1), current_column(1) {}
+    : input(input), position(0), current_line(1), current_column(1) {
+}
 
 Token Lexer::getNextToken() {
     while (position < input.size()) {

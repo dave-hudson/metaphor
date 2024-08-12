@@ -3,7 +3,6 @@
 #include "Parser.hpp"
 
 Parser::Parser() : current_token(TokenType::END_OF_FILE, "", 0, 0) {
-    // Constructor implementation
 }
 
 void Parser::parse(const std::string& initial_file) {
