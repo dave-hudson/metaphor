@@ -36,7 +36,7 @@ $(OBJ_DIR):
 	mkdir -p $(OBJ_DIR)
 
 # Include dependency files
--include $(OBJ_FILES:.o=.d)
+-include $(METAPHORC_OBJS:.o=.d)
 
 $(APP): $(OBJ_DIR) $(METAPHORC_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(METAPHORC_OBJS)
