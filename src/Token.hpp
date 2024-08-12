@@ -1,5 +1,5 @@
-#ifndef TOKEN_HPP
-#define TOKEN_HPP
+#ifndef __TOKEN_HPP
+#define __TOKEN_HPP
 
 #include <string>
 #include <ostream>
@@ -42,4 +42,4 @@ public:
     int column;
 };
 
-#endif
+#endif // __TOKEN_HPP

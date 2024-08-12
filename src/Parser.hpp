@@ -1,5 +1,5 @@
-#ifndef PARSER_HPP
-#define PARSER_HPP
+#ifndef __PARSER_HPP
+#define __PARSER_HPP
 
 #include <iostream>
 #include <string>
@@ -32,4 +32,4 @@ private:
     std::set<std::filesystem::path> processed_files;
 };
 
-#endif
+#endif // __PARSER_HPP

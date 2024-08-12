@@ -1,5 +1,5 @@
-#ifndef LEXER_HPP
-#define LEXER_HPP
+#ifndef __LEXER_HPP
+#define __LEXER_HPP
 
 #include <string>
 #include <map>
@@ -43,4 +43,4 @@ private:
     };
 };
 
-#endif
+#endif // __LEXER_HPP
