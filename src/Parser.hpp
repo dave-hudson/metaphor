@@ -10,6 +10,20 @@
 
 #include "Lexer.hpp"
 
+class ParseNode {
+public:
+    TokenType tokenType;
+    std::string value;
+    int line;
+    int column;
+    ParseNode* parentNode;
+    std::vector<std::unique_ptr<ParseNode>> childNodes;
+
+    ParseNode(const Token& token);
+    auto addChild(std::unique_ptr<ParseNode> child) -> void;
+    auto printTree(int level = 0) const -> void;
+};
+
 enum class ParserState {
     NONE,
     KEYWORD,
@@ -28,19 +42,20 @@ private:
         std::string filename;
     };
 
+    auto parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>;
+    auto parseInclude() -> void;
+    auto parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode>;
     auto loadFile(const std::string& filename) -> void;
     auto getNextToken() -> Token;
-    auto handleInclude() -> void;
-    auto handleKeyword() -> void;
-    auto raiseSyntaxError(const std::string& message) -> void;
+    auto getNextSyntaxToken() -> Token;
+    [[noreturn]] auto raiseSyntaxError(const std::string& message) -> void;
 
     std::vector<LexerWithFilename> lexers;
     Token currentToken;
     std::set<std::filesystem::path> processedFiles;
     int localIndentLevel;               // Indent level withing the current file
     int fileIndentLevel;                // Base indent level for the current file
-    ParserState parseState;             // The current parser state
-    TokenType keywordType;              // The current keyword being processed
+    std::unique_ptr<ParseNode> syntaxTree;
 };
 
 #endif // __PARSER_HPP

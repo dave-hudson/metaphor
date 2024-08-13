@@ -24,6 +24,7 @@ private:
     int currentColumn;
 
     const std::map<std::string, TokenType> keyword_map = {
+        {"Define:", TokenType::DEFINE},
         {"Require:", TokenType::REQUIRE},
         {"Include:", TokenType::INCLUDE}
     };

@@ -5,6 +5,7 @@
 #include <ostream>
 
 enum class TokenType {
+    DEFINE,
     REQUIRE,
     INCLUDE,
     COMMENT,
