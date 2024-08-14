@@ -43,11 +43,6 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
         case TokenType::END_OF_FILE:
             return defineNode;
 
-        case TokenType::INCLUDE:
-            checkIndentation(token);
-            parseInclude();
-            break;
-
         case TokenType::REQUIRE:
             checkIndentation(token);
             defineNode->addChild(parseRequire(token));
@@ -182,6 +177,12 @@ auto Parser::getNextToken() -> Token {
 auto Parser::getNextSyntaxToken() -> Token {
     while (true) {
         auto token = getNextToken();
+        if (token.type == TokenType::INCLUDE) {
+            checkIndentation(token);
+            parseInclude();
+            continue;
+        }
+
         if (token.type != TokenType::WHITESPACE &&
                 token.type != TokenType::COMMENT &&
                 token.type != TokenType::NEWLINE) {
