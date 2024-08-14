@@ -26,7 +26,6 @@ private:
     bool processingIndent;              // Are we processing indentation at this point?
     int indentOffset; 
     Token currentToken;
-    bool badIndent;
 
     const std::map<std::string, TokenType> keyword_map = {
         {"Define:", TokenType::DEFINE},

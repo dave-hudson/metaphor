@@ -13,8 +13,7 @@ Lexer::Lexer(const std::string& input) :
         indentColumn(1),
         processingIndent(true),
         indentOffset(0),
-        currentToken(TokenType::END_OF_FILE, "", 0, 0),
-        badIndent(false) {
+        currentToken(TokenType::END_OF_FILE, "", 0, 0) {
 }
 
 auto Lexer::getNextToken() -> Token {
@@ -37,7 +36,6 @@ auto Lexer::getNextToken() -> Token {
             }
         }
 
-        // The last END is actually the token that triggered the END processing.
         return currentToken;
     }
 
@@ -76,27 +74,16 @@ auto Lexer::getNextToken() -> Token {
         indentColumn = currentToken.column;
         if (indentOffset) {
             if (indentOffset % INDENT_SPACES) {
-                badIndent = true;
+                currentToken.type = TokenType::BAD_INDENT;
+                return currentToken;
             }
 
             if (indentOffset > 0) {
-                if (badIndent) {
-                    indentOffset += INDENT_SPACES - (indentOffset % INDENT_SPACES);
-                }
-
                 return Token(TokenType::BEGIN, "", 0, 0);
-            }
-
-            if (badIndent) {
-                indentOffset -= INDENT_SPACES - (indentOffset % INDENT_SPACES);
             }
 
             return Token(TokenType::END, "", 0, 0);
         }
-    }
-
-    if (badIndent) {
-        currentToken.type = TokenType::BAD_INDENT;
     }
 
     return currentToken;

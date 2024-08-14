@@ -64,6 +64,7 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
 
         default:
             std::cout << "token " << static_cast<int>(token.type) << " found\n";
+            raiseSyntaxError("Unexpected token");
         }
     }
 }
@@ -106,6 +107,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
 
         default:
             std::cout << "token " << static_cast<int>(token.type) << " found\n";
+            raiseSyntaxError("Unexpected token");
         }
     }
 }
