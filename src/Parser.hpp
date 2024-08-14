@@ -24,13 +24,6 @@ public:
     auto printTree(int level = 0) const -> void;
 };
 
-enum class ParserState {
-    NONE,
-    KEYWORD,
-    TEXT,
-    ERROR
-};
-
 class Parser {
 public:
     Parser();
