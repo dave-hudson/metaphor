@@ -13,33 +13,13 @@ Lexer::Lexer(const std::string& input) :
         indentColumn(1),
         processingIndent(true),
         indentOffset(0),
-        currentToken(TokenType::END_OF_FILE, "", 0, 0) {
-}
-
-auto Lexer::_getNextToken() -> Token {
-    while (position < input.size()) {
-        char ch = input[position];
-
-        if (ch == '\n') {
-            return readNewline();
-        }
-
-        if (isspace(ch)) {
-            consumeWhitespace();
-            continue;
-        }
-
-        if (ch == '#') {
-            consumeComment();
-            continue;
-        }
-        return readKeywordOrText();
-    }
-
-    return Token(TokenType::END_OF_FILE, "", currentLine, currentColumn);
+        currentToken(TokenType::END_OF_FILE, "", 0, 0),
+        badIndent(false) {
 }
 
 auto Lexer::getNextToken() -> Token {
+    // Are we doing any indentation changes?  If yes then ensure we emit to correct
+    // stream of tokens before the last actual token we saw.
     if (indentOffset) {
         if (indentOffset > 0) {
             indentOffset -= INDENT_SPACES;
@@ -61,45 +41,65 @@ auto Lexer::getNextToken() -> Token {
         return currentToken;
     }
 
-    // Get the next token.  Note we do some special processing if we see a newline, but we
-    // don't want to return that back to our caller.
+    // Get the next token.
     while (true) {
-        currentToken = _getNextToken();
+        if (position >= input.size()) {
+            return Token(TokenType::END_OF_FILE, "", currentLine, currentColumn);
+        }
 
-        if (currentToken.type == TokenType::NEWLINE) {
+        char ch = input[position];
+
+        if (ch == '\n') {
             processingIndent = true;
+            consumeNewline();
             continue;
         }
 
-        if (currentToken.type == TokenType::END_OF_FILE) {
-            return currentToken;
+        if (isspace(ch)) {
+            consumeWhitespace();
+            continue;
         }
 
+        if (ch == '#') {
+            consumeComment();
+            continue;
+        }
+
+        currentToken = readKeywordOrText();
         break;
     }
 
+    // If our new token is preceded by indentation then process that first!
     if (processingIndent) {
         processingIndent = false;
         indentOffset = currentToken.column - indentColumn;
         indentColumn = currentToken.column;
         if (indentOffset) {
+            if (indentOffset % INDENT_SPACES) {
+                badIndent = true;
+            }
+
             if (indentOffset > 0) {
+                if (badIndent) {
+                    indentOffset += INDENT_SPACES - (indentOffset % INDENT_SPACES);
+                }
+
                 return Token(TokenType::BEGIN, "", 0, 0);
+            }
+
+            if (badIndent) {
+                indentOffset -= INDENT_SPACES - (indentOffset % INDENT_SPACES);
             }
 
             return Token(TokenType::END, "", 0, 0);
         }
     }
 
-    return currentToken;
-}
+    if (badIndent) {
+        currentToken.type = TokenType::BAD_INDENT;
+    }
 
-auto Lexer::readNewline() -> Token {
-    Token token(TokenType::NEWLINE, "", currentLine, currentColumn);
-    position++;
-    currentLine++;
-    currentColumn = 1;
-    return token;
+    return currentToken;
 }
 
 auto Lexer::readKeywordOrText() -> Token {
@@ -123,6 +123,12 @@ auto Lexer::readKeywordOrText() -> Token {
     }
 
     return Token(TokenType::TEXT, input.substr(startPosition, position - startPosition), currentLine, startColumn);
+}
+
+auto Lexer::consumeNewline() -> void {
+    position++;
+    currentLine++;
+    currentColumn = 1;
 }
 
 auto Lexer::consumeWhitespace() -> void {

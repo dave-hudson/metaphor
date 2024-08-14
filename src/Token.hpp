@@ -5,13 +5,13 @@
 #include <ostream>
 
 enum class TokenType {
-    NEWLINE,
+    BEGIN,
+    END,
     DEFINE,
     REQUIRE,
     INCLUDE,
-    BEGIN,
-    END,
     TEXT,
+    BAD_INDENT,
     END_OF_FILE
 };
 
