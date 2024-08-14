@@ -41,8 +41,6 @@ private:
     auto parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode>;
     auto loadFile(const std::string& filename) -> void;
     auto getNextToken() -> Token;
-    auto getNextSyntaxToken() -> Token;
-    auto checkIndentation(const Token& token) -> void;
     [[noreturn]] auto raiseSyntaxError(const std::string& message) -> void;
 
     std::vector<LexerWithFilename> lexers;
@@ -50,8 +48,6 @@ private:
     std::set<std::filesystem::path> processedFiles;
     std::unique_ptr<ParseNode> syntaxTree;
     int indentLevel;                    // Indent level withing the current file
-    bool processingIndent;              // Are we processing indentation at this point?
-    int emitEndCount;                   // Number of "END" symbols to emit
 };
 
 #endif // __PARSER_HPP

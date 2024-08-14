@@ -2,8 +2,6 @@
 
 #include "Parser.hpp"
 
-#define INDENT_SPACES 2
-
 ParseNode::ParseNode(const Token& token) :
         tokenType(token.type),
         value(token.value),
@@ -20,7 +18,7 @@ auto ParseNode::addChild(std::unique_ptr<ParseNode> child) -> void {
 
 // Method to print the tree for debugging
 auto ParseNode::printTree(int level) const -> void {
-    std::cout << std::string(level * 2, ' ') << value << std::endl;
+    std::cout << std::string(level * 2, ' ') << static_cast<int>(tokenType) << ": " << value << std::endl;
     for (const auto& child : childNodes) {
         child->printTree(level + 1);
     }
@@ -28,52 +26,92 @@ auto ParseNode::printTree(int level) const -> void {
 
 Parser::Parser() :
         currentToken(TokenType::END_OF_FILE, "", 0, 0),
-        indentLevel(0),
-        processingIndent(true),
-        emitEndCount(0) {
+        indentLevel(0) {
 }
 
 auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode> {
     auto defineNode = std::make_unique<ParseNode>(defineToken);
+    auto beginNode = getNextToken();
+    if (beginNode.type == TokenType::END_OF_FILE) {
+        return defineNode;
+    }
+
+    if (beginNode.type != TokenType::BEGIN) {
+        raiseSyntaxError("Expected indented block");
+    }
+
     indentLevel++;
 
     while (true) {
-        const auto& token = getNextSyntaxToken();
+        const auto& token = getNextToken();
         switch (token.type) {
         case TokenType::END_OF_FILE:
             return defineNode;
-
-        case TokenType::REQUIRE:
-            checkIndentation(token);
-            defineNode->addChild(parseRequire(token));
-            break;
 
         case TokenType::END:
             indentLevel--;
             return defineNode;
 
+        case TokenType::REQUIRE:
+            defineNode->addChild(parseRequire(token));
+            break;
+
+        case TokenType::TEXT: {
+                auto textNode = std::make_unique<ParseNode>(token);
+                defineNode->addChild(std::move(textNode));
+            }
+            break;
+
         default:
             std::cout << "token " << static_cast<int>(token.type) << " found\n";
         }
     }
-
-    return defineNode;
 }
 
 auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode> {
     auto requireNode = std::make_unique<ParseNode>(requireToken);
-    const auto& token = getNextSyntaxToken();
-    if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected text description");
+
+    const auto& token = getNextToken();
+    if (token.type == TokenType::TEXT) {
+        auto textNode = std::make_unique<ParseNode>(token);
+        requireNode->addChild(std::move(textNode));
+        return requireNode;
     }
 
-    auto textNode = std::make_unique<ParseNode>(token);
-    requireNode->addChild(std::move(textNode));
-    return requireNode;
+    if (token.type != TokenType::BEGIN) {
+        raiseSyntaxError("Expected description or indent");
+    }
+
+    indentLevel++;
+
+    while (true) {
+        const auto& token = getNextToken();
+        switch (token.type) {
+        case TokenType::END_OF_FILE:
+            return requireNode;
+
+        case TokenType::END:
+            indentLevel--;
+            return requireNode;
+
+        case TokenType::REQUIRE:
+            requireNode->addChild(parseRequire(token));
+            break;
+
+        case TokenType::TEXT: {
+                auto textNode = std::make_unique<ParseNode>(token);
+                requireNode->addChild(std::move(textNode));
+            }
+            break;
+
+        default:
+            std::cout << "token " << static_cast<int>(token.type) << " found\n";
+        }
+    }
 }
 
 auto Parser::parseInclude() -> void {
-    const auto& token = getNextSyntaxToken();
+    const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
         raiseSyntaxError("Expected file name");
     }
@@ -85,17 +123,15 @@ auto Parser::parseInclude() -> void {
 auto Parser::parse(const std::string& initial_file) -> void {
     loadFile(initial_file);
 
-    const auto& token = getNextSyntaxToken();
+    const auto& token = getNextToken();
     if (token.type != TokenType::DEFINE) {
         raiseSyntaxError("Expected Define keyword");
     }
 
-    checkIndentation(token);
-
     syntaxTree = parseDefine(token);
     syntaxTree->printTree();
 
-    const auto& tokenNext = getNextSyntaxToken();
+    const auto& tokenNext = getNextToken();
     if (tokenNext.type != TokenType::END_OF_FILE) {
         raiseSyntaxError("Already processed Define keyword");
     }
@@ -125,77 +161,25 @@ auto Parser::loadFile(const std::string& filename) -> void {
 }
 
 auto Parser::getNextToken() -> Token {
-    if (emitEndCount) {
-        emitEndCount--;
-
-        // Do we have any more END tokens to emit?  If yes then emit one now.
-        if (emitEndCount) {
-            return Token(TokenType::END, "", 0, 0);
-        }
-
-        // The last END is actually the token that triggered the END processing.
-        return currentToken;
-    }
-
     while (!lexers.empty()) {
         auto& lexerWithFilename = lexers.back();
         currentToken = lexerWithFilename.lexer->getNextToken();
 
-        if (currentToken.type == TokenType::NEWLINE) {
-            processingIndent = true;
-            return currentToken;
-        }
-
-        if (currentToken.type == TokenType::WHITESPACE) {
-            return currentToken;
-        }
-
         if (currentToken.type == TokenType::END_OF_FILE) {
-            processingIndent = true;
             indentLevel = lexers.back().currentIndent;
             lexers.pop_back();
             continue;
         }
 
-        if (processingIndent) {
-            processingIndent = false;
-            auto thisIndent = (currentToken.column - 1 + INDENT_SPACES - 1) / INDENT_SPACES;
-            if (thisIndent < indentLevel) {
-                // Set emitEndCount to the total number of END tokens we need, plus one for the
-                // token that triggered the need for the END tokens to be emitted.
-                emitEndCount = indentLevel - thisIndent;
-                return Token(TokenType::END, "", 0, 0);
-            }
+        if (currentToken.type == TokenType::INCLUDE) {
+            parseInclude();
+            continue;
         }
 
         return currentToken;
     }
 
     return Token(TokenType::END_OF_FILE, "", 0, 0);
-}
-
-auto Parser::getNextSyntaxToken() -> Token {
-    while (true) {
-        auto token = getNextToken();
-        if (token.type == TokenType::INCLUDE) {
-            checkIndentation(token);
-            parseInclude();
-            continue;
-        }
-
-        if (token.type != TokenType::WHITESPACE &&
-                token.type != TokenType::COMMENT &&
-                token.type != TokenType::NEWLINE) {
-            return token;
-        }
-    }
-}
-
-auto Parser::checkIndentation(const Token& token) -> void {
-    int expectedColumn = (indentLevel * 2) + 1;
-    if (token.column != expectedColumn) {
-        raiseSyntaxError("Indentation error - token should be at column " + std::to_string(expectedColumn));
-    }
 }
 
 [[noreturn]] auto Parser::raiseSyntaxError(const std::string& message) -> void {

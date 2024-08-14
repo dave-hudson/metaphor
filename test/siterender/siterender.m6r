@@ -1,7 +1,9 @@
-Define: siterender application
+Define:
   # I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
-  Require: Environment and dependency setup
+  Require:
+    Environment and dependency setup
+
     Require: The tool must be compatible with Node.js version 14.x or later and headless Google Chrome (current version).
     Require: Use the latest available stable version of puppeteer for rendering.
     Require: Use the latest available stable version of yargs for command line options.
@@ -10,12 +12,16 @@ Define: siterender application
     Require: Use the latest available stable version of fast-xml-parser to handle the XML parsing.
     Require: Any package dependencies that you might need must be explicitly stated in these requirements.  If you need to use a dependency that is not listed here then ask for approval or use a different approach.
 
-  Require: Tool invocation
+  Require:
+    Tool invocation
+
     Require: The tool should be invoked as a script with Node.js using ES6 modules.
     Require: Ensure that the tool can be run from the command line with appropriate parameters.
     Require: The tool does not need a configuration file.
 
-  Require: Sitemap handling
+  Require:
+    Sitemap handling
+
     Require: The tool will scan a sitemap.xml file that will provide a list of URLs to be pre-rendered.
     Require: The sitemap will be defined by either a file or a URL.  Either option can be provided but not both, and one option must be provided by the user.
     Require: If the sitemap is being defined by a file then the --sitemap-file paramater will define where to find the sitemap file.
@@ -28,7 +34,9 @@ Define: siterender application
     Require: When the tool encounters a sitemap index it should emit a console message: "Processing sitemap index".  It should then process each sitemap within the sitemap index.
     Require: For each sitemap found in a sitemap index, emit a console message: "Processing sitemap: <name>" where <name> is the name of the sitemap file, and then process the sitemap file.
 
-  Require: File management
+  Require:
+    File management
+
     Require: Rendered pages should be saved in a specified output directory.
     Require: The output directory is defined by the non-optional --output command line parameter.
     Require: For each page, the directory structure should match the URL path, but should not include the hostname or any port number.
@@ -38,7 +46,9 @@ Define: siterender application
     Require: The tool must not delete any file or directory that will not be written as an output file.
     Require: If any file or directory operations fail then log a message to the console and exit with an error status.
 
-  Require: Rendering
+  Require:
+    Rendering
+
     Require: Once the directory structure is in place and all old index.html files have been deleted, render all the pages.
     Require: The tool should parallelize rendering operations.
     Require: The default number of parallel tasks should default to the number of available CPU cores.
@@ -49,17 +59,23 @@ Define: siterender application
     Require: If an error occurs, even if it's handled, log a message indicating the URL that had the error along with a message indicating why the error occurred.
     Require: In the event of any errors, ensure that all puppeteer resources are released correctly.
 
-  Require: Retry Mechanism
+  Require:
+    Retry Mechanism
+
     Require: Implement a retry mechanism for failed render attempts with a default of 3 retries.
     Require: The retry mechanism should be applied to invocations of puppeteer as well as for network failures.
     Require: Allow this to be configurable with the --max-retries parameter.
     Require: If a failure occurs, wait one second before attempting the retry.
     Require: The tool should exit with an error status if any page fails to render after retries.
 
-  Require: Successful completion
+  Require:
+    Successful completion
+
     Require: If all pages render successfully, exit with a success status.
 
-  Require: Logging
+  Require:
+    Logging
+
     Require: Emit console messages for progress and errors.
     Require: The tool does not need to log to a file.
     Require: Example messages:
@@ -67,11 +83,15 @@ Define: siterender application
     Require: “Failed: <url>: <reason>”, where <url> is the URL being processed, and <reason> is the failure reason.
     Require: There should be no other console messages.
 
-  Require: Usage Information
+  Require:
+    Usage Information
+
     Require: If invoked with invalid parameters, display correct usage information.
     Require: Include a -h parameter to display a help message with all valid parameters and their usage.
 
-  Require: Code quality
+  Require:
+    Code quality
+
     Require: Use JSDoc annotations for all functions.
     Require: Use 4 spaces for indentation in the source code.
     Require: Where any functions may throw errors, include try/catch blocks to handle those error conditions.

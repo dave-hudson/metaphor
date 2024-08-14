@@ -13,15 +13,20 @@ public:
     auto getNextToken() -> Token;
 
 private:
+    auto _getNextToken() -> Token;
     auto readNewline() -> Token;
-    auto readWhitespace() -> Token;
     auto readKeywordOrText() -> Token;
-    auto readComment() -> Token;
+    auto consumeWhitespace() -> void;
+    auto consumeComment() -> void;
 
     std::string input;
     size_t position;
     int currentLine;
     int currentColumn;
+    int indentColumn;
+    bool processingIndent;              // Are we processing indentation at this point?
+    int indentOffset; 
+    Token currentToken;
 
     const std::map<std::string, TokenType> keyword_map = {
         {"Define:", TokenType::DEFINE},
