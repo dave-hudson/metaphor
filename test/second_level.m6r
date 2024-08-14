@@ -5,7 +5,7 @@ Feature: Second Level Feature
 
 Include: third_level.m6r
 
-Scenario: Second Level Scenario
+Require: Second Level Scenario
   Given: I am testing the second-level feature
   When: I include the third level feature
   Then: it should process correctly

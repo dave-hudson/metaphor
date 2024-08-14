@@ -1,4 +1,5 @@
 #include <cctype>
+#include <iostream>
 
 #include "Lexer.hpp"
 
@@ -37,15 +38,15 @@ auto Lexer::readNewline() -> Token {
 }
 
 auto Lexer::readWhitespace() -> Token{
-    int start_column = currentColumn;
-    size_t start_position = position;
+    int startColumn = currentColumn;
+    size_t startPosition = position;
 
     while (position < input.size() && isspace(input[position]) && input[position] != '\n') {
         position++;
         currentColumn++;
     }
 
-    return Token(TokenType::WHITESPACE, input.substr(start_position, position - start_position), currentLine, start_column);
+    return Token(TokenType::WHITESPACE, input.substr(startPosition, position - startPosition), currentLine, startColumn);
 }
 
 auto Lexer::readKeywordOrText() -> Token {

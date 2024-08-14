@@ -7,3 +7,4 @@ Define: Top Level Feature
 
   Require: Top Level Scenario
   Require: I am testing the top-level feature
+  Require: fred
