@@ -8,12 +8,38 @@
 Lexer::Lexer(const std::string& input) :
         input(input),
         position(0),
+        startOfLine(0),
+        endOfLine(0),
         currentLine(1),
         currentColumn(1),
         indentColumn(1),
         processingIndent(true),
         indentOffset(0),
         currentToken(TokenType::END_OF_FILE, "", 0, 0) {
+    updateEndOfLine();
+}
+
+auto Lexer::updateEndOfLine() -> void {
+    startOfLine = position;
+
+    size_t inputSize = input.size();
+    while (position < inputSize) {
+        if (input[position] == '\n' || !isspace(input[position])) {
+            break;
+        }
+
+        position++;
+        currentColumn++;
+    }
+
+    endOfLine = position;
+    while (endOfLine < inputSize) {
+        if (input[endOfLine] == '\n') {
+            break;
+        }
+
+        endOfLine++;
+    }
 }
 
 auto Lexer::getNextToken() -> Token {
@@ -25,14 +51,14 @@ auto Lexer::getNextToken() -> Token {
 
             // Do we have any more BEGIN tokens to emit?  If yes then emit one now.
             if (indentOffset) {
-                return Token(TokenType::BEGIN, "", currentLine, currentColumn - currentToken.value.length());
+                return Token(TokenType::BEGIN, "[Begin]", currentLine, currentColumn - currentToken.value.length() - indentOffset);
             }
         } else {
             indentOffset += INDENT_SPACES;
 
             // Do we have any more END tokens to emit?  If yes then emit one now.
             if (indentOffset) {
-                return Token(TokenType::END, "", currentLine, currentColumn - currentToken.value.length());
+                return Token(TokenType::END, "[End]", currentLine, currentColumn - currentToken.value.length());
             }
         }
 
@@ -47,9 +73,11 @@ auto Lexer::getNextToken() -> Token {
 
         char ch = input[position];
 
+        // If we have a new line then get the next one.
         if (ch == '\n') {
             processingIndent = true;
             consumeNewline();
+            updateEndOfLine();
             continue;
         }
 
@@ -58,8 +86,9 @@ auto Lexer::getNextToken() -> Token {
             continue;
         }
 
+        // If we have a comment then skip over everything until the end of the current line.
         if (ch == '#') {
-            consumeComment();
+            position = endOfLine;
             continue;
         }
 
@@ -79,10 +108,10 @@ auto Lexer::getNextToken() -> Token {
             }
 
             if (indentOffset > 0) {
-                return Token(TokenType::BEGIN, "", currentLine, currentColumn - currentToken.value.length());
+                return Token(TokenType::BEGIN, "[Begin]", currentLine, currentColumn - currentToken.value.length() - indentOffset);
             }
 
-            return Token(TokenType::END, "", currentLine, currentColumn - currentToken.value.length());
+            return Token(TokenType::END, "[End]", currentLine, currentColumn - currentToken.value.length());
         }
     }
 
@@ -125,9 +154,6 @@ auto Lexer::consumeWhitespace() -> void {
     }
 }
 
-auto Lexer::consumeComment() -> void {
-    while (position < input.size() && input[position] != '\n') {
-        position++;
-        currentColumn++;
-    }
+auto Lexer::getCurrentLine() -> std::string {
+    return input.substr(startOfLine, endOfLine - startOfLine + 1);
 }

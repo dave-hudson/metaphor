@@ -11,7 +11,6 @@ void printUsage(const char* programName) {
 
 int main(int argc, char* argv[]) {
     if (argc != 2) {
-        printUsage(argv[0]);
         return 1;
     }
 
@@ -24,9 +23,10 @@ int main(int argc, char* argv[]) {
     if (!res) {
         std::vector<std::string> errorMessages = parser.getSyntaxErrors();
         for (std::string s : errorMessages) {
-            std::cerr << s;
+            std::cerr << "----------------\n" << s;
         }
 
+        std::cerr << "----------------\n";
         return -1;
     }
 

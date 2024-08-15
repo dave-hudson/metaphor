@@ -31,16 +31,19 @@ Parser::Parser() :
 
 auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode> {
     auto defineNode = std::make_unique<ParseNode>(defineToken);
-    auto beginNode = getNextToken();
-    if (beginNode.type == TokenType::END_OF_FILE) {
+
+    const auto& initToken = getNextToken();
+    if (initToken.type == TokenType::TEXT) {
+        auto textNode = std::make_unique<ParseNode>(initToken);
+        defineNode->addChild(std::move(textNode));
         return defineNode;
     }
 
-    if (beginNode.type != TokenType::BEGIN) {
-        raiseSyntaxError("Expected indented block");
+    if (initToken.type != TokenType::BEGIN) {
+        raiseSyntaxError("Expected indent for 'Define' block");
     }
 
-    indentLevel++;
+    auto blockIndentLevel = indentLevel;
 
     while (true) {
         const auto& token = getNextToken();
@@ -49,7 +52,10 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
             return defineNode;
 
         case TokenType::END:
-            indentLevel--;
+            if (indentLevel >= blockIndentLevel) {
+                break;
+            }
+
             return defineNode;
 
         case TokenType::REQUIRE:
@@ -63,7 +69,7 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
             break;
 
         default:
-            raiseSyntaxError("Unexpected token in Define block");
+            raiseSyntaxError("Unexpected token in 'Define' block");
         }
     }
 }
@@ -71,18 +77,18 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
 auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode> {
     auto requireNode = std::make_unique<ParseNode>(requireToken);
 
-    const auto& token = getNextToken();
-    if (token.type == TokenType::TEXT) {
-        auto textNode = std::make_unique<ParseNode>(token);
+    const auto& initToken = getNextToken();
+    if (initToken.type == TokenType::TEXT) {
+        auto textNode = std::make_unique<ParseNode>(initToken);
         requireNode->addChild(std::move(textNode));
         return requireNode;
     }
 
-    if (token.type != TokenType::BEGIN) {
-        raiseSyntaxError("Expected description or indent");
+    if (initToken.type != TokenType::BEGIN) {
+        raiseSyntaxError("Expected description or indent for 'Require' block");
     }
 
-    indentLevel++;
+    auto blockIndentLevel = indentLevel;
 
     while (true) {
         const auto& token = getNextToken();
@@ -91,7 +97,10 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
             return requireNode;
 
         case TokenType::END:
-            indentLevel--;
+            if (indentLevel >= blockIndentLevel) {
+                break;
+            }
+
             return requireNode;
 
         case TokenType::REQUIRE:
@@ -109,7 +118,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
             break;
 
         default:
-            raiseSyntaxError("Unexpected token in Require block");
+            raiseSyntaxError("Unexpected token in 'Require' block");
         }
     }
 }
@@ -117,18 +126,18 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
 auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNode> {
     auto requireNode = std::make_unique<ParseNode>(exampleToken);
 
-    const auto& token = getNextToken();
-    if (token.type == TokenType::TEXT) {
-        auto textNode = std::make_unique<ParseNode>(token);
+    const auto& initToken = getNextToken();
+    if (initToken.type == TokenType::TEXT) {
+        auto textNode = std::make_unique<ParseNode>(initToken);
         requireNode->addChild(std::move(textNode));
         return requireNode;
     }
 
-    if (token.type != TokenType::BEGIN) {
-        raiseSyntaxError("Expected description or indent");
+    if (initToken.type != TokenType::BEGIN) {
+        raiseSyntaxError("Expected description or indent for 'Example' block");
     }
 
-    indentLevel++;
+    auto blockIndentLevel = indentLevel;
 
     while (true) {
         const auto& token = getNextToken();
@@ -137,7 +146,10 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNod
             return requireNode;
 
         case TokenType::END:
-            indentLevel--;
+            if (indentLevel >= blockIndentLevel) {
+                break;
+            }
+
             return requireNode;
 
         case TokenType::TEXT: {
@@ -147,7 +159,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNod
             break;
 
         default:
-            raiseSyntaxError("Unexpected token in Example block");
+            raiseSyntaxError("Unexpected token in 'Example' block");
         }
     }
 }
@@ -167,14 +179,14 @@ auto Parser::parse(const std::string& initial_file) -> bool {
 
     const auto& token = getNextToken();
     if (token.type != TokenType::DEFINE) {
-        raiseSyntaxError("Expected Define keyword");
+        raiseSyntaxError("Expected 'Define' keyword");
     }
 
     syntaxTree = parseDefine(token);
 
     const auto& tokenNext = getNextToken();
     if (tokenNext.type != TokenType::END_OF_FILE) {
-        raiseSyntaxError("Already processed Define keyword");
+        raiseSyntaxError("Unexpected text after 'Define' block");
     }
 
     if (parseErrors.size() > 0) {
@@ -213,18 +225,27 @@ auto Parser::getNextToken() -> Token {
         auto& lexerWithFilename = lexers.back();
         currentToken = lexerWithFilename.lexer->getNextToken();
 
-        if (currentToken.type == TokenType::END_OF_FILE) {
+        switch (currentToken.type) {
+        case TokenType::END_OF_FILE:
             indentLevel = lexers.back().currentIndent;
             lexers.pop_back();
-            continue;
-        }
+            break;
 
-        if (currentToken.type == TokenType::INCLUDE) {
+        case TokenType::INCLUDE:
             parseInclude();
-            continue;
-        }
+            break;
 
-        return currentToken;
+        case TokenType::BEGIN:
+            indentLevel++;
+            return currentToken;
+
+        case TokenType::END:
+            indentLevel--;
+            return currentToken;
+
+        default:
+            return currentToken;
+        }
     }
 
     return Token(TokenType::END_OF_FILE, "", 0, 0);
@@ -232,10 +253,16 @@ auto Parser::getNextToken() -> Token {
 
 auto Parser::raiseSyntaxError(const std::string& message) -> void {
     const auto& token = currentToken;
+    std::string line = lexers.back().lexer->getCurrentLine();
+    std::string caret = "";
+    for (int i = 1; i < token.column; i++) {
+        caret += ' ';
+    }
+
     std::string currentFile = lexers.empty() ? "Unknown" : lexers.back().filename;
-    std::string errorMessage = message + ": Found '" + token.value + "' in file " + currentFile +
-                                ", line " + std::to_string(token.line) +
-                                ", column " + std::to_string(token.column) + "\n";
+    std::string errorMessage = message + ": Found '" + token.value + "', line " + std::to_string(token.line) +
+                                ", column " + std::to_string(token.column) + ", file " + currentFile +
+                                "\n" + caret + "|\n" + caret + "v\n" + line;
     parseErrors.push_back(errorMessage);
 }
 
