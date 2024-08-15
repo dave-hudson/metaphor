@@ -28,9 +28,13 @@ private:
     Token currentToken;
 
     const std::map<std::string, TokenType> keyword_map = {
+        {"Include:", TokenType::INCLUDE},
         {"Define:", TokenType::DEFINE},
         {"Require:", TokenType::REQUIRE},
-        {"Include:", TokenType::INCLUDE}
+        {"Example:", TokenType::EXAMPLE},
+        {"Given:", TokenType::GIVEN},
+        {"When:", TokenType::WHEN},
+        {"Then:", TokenType::THEN}
     };
 };
 

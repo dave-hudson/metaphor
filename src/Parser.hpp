@@ -27,7 +27,8 @@ public:
 class Parser {
 public:
     Parser();
-    void parse(const std::string& initial_file);
+    auto parse(const std::string& initial_file) -> bool;
+    auto getSyntaxErrors() -> std::vector<std::string>;
 
 private:
     struct LexerWithFilename {
@@ -39,15 +40,17 @@ private:
     auto parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>;
     auto parseInclude() -> void;
     auto parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode>;
+    auto parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNode>;
     auto loadFile(const std::string& filename) -> void;
     auto getNextToken() -> Token;
-    [[noreturn]] auto raiseSyntaxError(const std::string& message) -> void;
+    auto raiseSyntaxError(const std::string& message) -> void;
 
     std::vector<LexerWithFilename> lexers;
     Token currentToken;
     std::set<std::filesystem::path> processedFiles;
     std::unique_ptr<ParseNode> syntaxTree;
     int indentLevel;                    // Indent level withing the current file
+    std::vector<std::string> parseErrors;
 };
 
 #endif // __PARSER_HPP

@@ -7,10 +7,14 @@
 enum class TokenType {
     BEGIN,
     END,
-    DEFINE,
-    REQUIRE,
     INCLUDE,
     TEXT,
+    DEFINE,
+    REQUIRE,
+    EXAMPLE,
+    GIVEN,
+    WHEN,
+    THEN,
     BAD_INDENT,
     END_OF_FILE
 };

@@ -18,7 +18,7 @@ auto ParseNode::addChild(std::unique_ptr<ParseNode> child) -> void {
 
 // Method to print the tree for debugging
 auto ParseNode::printTree(int level) const -> void {
-    std::cout << std::string(level * 2, ' ') << static_cast<int>(tokenType) << ": " << value << std::endl;
+    std::cout << std::string(level * 2, ' ') << value << std::endl;
     for (const auto& child : childNodes) {
         child->printTree(level + 1);
     }
@@ -63,8 +63,7 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
             break;
 
         default:
-            std::cout << "token " << static_cast<int>(token.type) << " found\n";
-            raiseSyntaxError("Unexpected token");
+            raiseSyntaxError("Unexpected token in Define block");
         }
     }
 }
@@ -99,6 +98,10 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
             requireNode->addChild(parseRequire(token));
             break;
 
+        case TokenType::EXAMPLE:
+            requireNode->addChild(parseExample(token));
+            break;
+
         case TokenType::TEXT: {
                 auto textNode = std::make_unique<ParseNode>(token);
                 requireNode->addChild(std::move(textNode));
@@ -106,8 +109,45 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
             break;
 
         default:
-            std::cout << "token " << static_cast<int>(token.type) << " found\n";
-            raiseSyntaxError("Unexpected token");
+            raiseSyntaxError("Unexpected token in Require block");
+        }
+    }
+}
+
+auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNode> {
+    auto requireNode = std::make_unique<ParseNode>(exampleToken);
+
+    const auto& token = getNextToken();
+    if (token.type == TokenType::TEXT) {
+        auto textNode = std::make_unique<ParseNode>(token);
+        requireNode->addChild(std::move(textNode));
+        return requireNode;
+    }
+
+    if (token.type != TokenType::BEGIN) {
+        raiseSyntaxError("Expected description or indent");
+    }
+
+    indentLevel++;
+
+    while (true) {
+        const auto& token = getNextToken();
+        switch (token.type) {
+        case TokenType::END_OF_FILE:
+            return requireNode;
+
+        case TokenType::END:
+            indentLevel--;
+            return requireNode;
+
+        case TokenType::TEXT: {
+                auto textNode = std::make_unique<ParseNode>(token);
+                requireNode->addChild(std::move(textNode));
+            }
+            break;
+
+        default:
+            raiseSyntaxError("Unexpected token in Example block");
         }
     }
 }
@@ -122,7 +162,7 @@ auto Parser::parseInclude() -> void {
     loadFile(filename);
 }
 
-auto Parser::parse(const std::string& initial_file) -> void {
+auto Parser::parse(const std::string& initial_file) -> bool {
     loadFile(initial_file);
 
     const auto& token = getNextToken();
@@ -131,34 +171,40 @@ auto Parser::parse(const std::string& initial_file) -> void {
     }
 
     syntaxTree = parseDefine(token);
-    syntaxTree->printTree();
 
     const auto& tokenNext = getNextToken();
     if (tokenNext.type != TokenType::END_OF_FILE) {
         raiseSyntaxError("Already processed Define keyword");
     }
+
+    if (parseErrors.size() > 0) {
+        return false;
+    }
+
+    syntaxTree->printTree();
+    return true;
 }
 
 auto Parser::loadFile(const std::string& filename) -> void {
-    std::filesystem::path canonical_filename = std::filesystem::absolute(filename);
+    std::filesystem::path canonicalFilename = std::filesystem::absolute(filename);
 
-    if (processedFiles.find(canonical_filename) != processedFiles.end()) {
-        throw std::runtime_error("Infinite loop detected: '" + canonical_filename.string() + "' has already been processed.");
+    if (processedFiles.find(canonicalFilename) != processedFiles.end()) {
+        throw std::runtime_error("Infinite loop detected: '" + canonicalFilename.string() + "' has already been processed.");
     }
 
-    processedFiles.insert(canonical_filename);
+    processedFiles.insert(canonicalFilename);
 
-    if (!std::filesystem::exists(canonical_filename)) {
-        throw std::runtime_error("File not found: " + canonical_filename.string());
+    if (!std::filesystem::exists(canonicalFilename)) {
+        throw std::runtime_error("File not found: " + canonicalFilename.string());
     }
 
-    std::ifstream file(canonical_filename);
+    std::ifstream file(canonicalFilename);
     if (!file.is_open()) {
-        throw std::runtime_error("Could not open file: " + canonical_filename.string());
+        throw std::runtime_error("Could not open file: " + canonicalFilename.string());
     }
 
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    lexers.push_back({std::make_unique<Lexer>(content), canonical_filename.string(), indentLevel});
+    lexers.push_back({std::make_unique<Lexer>(content), canonicalFilename.string(), indentLevel});
     indentLevel = 0;
 }
 
@@ -184,10 +230,15 @@ auto Parser::getNextToken() -> Token {
     return Token(TokenType::END_OF_FILE, "", 0, 0);
 }
 
-[[noreturn]] auto Parser::raiseSyntaxError(const std::string& message) -> void {
+auto Parser::raiseSyntaxError(const std::string& message) -> void {
     const auto& token = currentToken;
-    std::string current_file = lexers.empty() ? "Unknown" : lexers.back().filename;
-    throw std::runtime_error(message + ": Found '" + token.value + "' in file " + current_file +
+    std::string currentFile = lexers.empty() ? "Unknown" : lexers.back().filename;
+    std::string errorMessage = message + ": Found '" + token.value + "' in file " + currentFile +
                                 ", line " + std::to_string(token.line) +
-                                ", column " + std::to_string(token.column));
+                                ", column " + std::to_string(token.column) + "\n";
+    parseErrors.push_back(errorMessage);
+}
+
+auto Parser::getSyntaxErrors() -> std::vector<std::string> {
+    return parseErrors;
 }

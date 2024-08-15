@@ -25,14 +25,14 @@ auto Lexer::getNextToken() -> Token {
 
             // Do we have any more BEGIN tokens to emit?  If yes then emit one now.
             if (indentOffset) {
-                return Token(TokenType::BEGIN, "", 0, 0);
+                return Token(TokenType::BEGIN, "", currentLine, currentColumn - currentToken.value.length());
             }
         } else {
             indentOffset += INDENT_SPACES;
 
             // Do we have any more END tokens to emit?  If yes then emit one now.
             if (indentOffset) {
-                return Token(TokenType::END, "", 0, 0);
+                return Token(TokenType::END, "", currentLine, currentColumn - currentToken.value.length());
             }
         }
 
@@ -79,10 +79,10 @@ auto Lexer::getNextToken() -> Token {
             }
 
             if (indentOffset > 0) {
-                return Token(TokenType::BEGIN, "", 0, 0);
+                return Token(TokenType::BEGIN, "", currentLine, currentColumn - currentToken.value.length());
             }
 
-            return Token(TokenType::END, "", 0, 0);
+            return Token(TokenType::END, "", currentLine, currentColumn - currentToken.value.length());
         }
     }
 
