@@ -5,8 +5,8 @@
 #include <ostream>
 
 enum class TokenType {
-    BEGIN,
-    END,
+    INDENT,
+    OUTDENT,
     INCLUDE,
     TEXT,
     DEFINE,
@@ -16,6 +16,7 @@ enum class TokenType {
     WHEN,
     THEN,
     BAD_INDENT,
+    BAD_OUTDENT,
     END_OF_FILE
 };
 

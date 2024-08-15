@@ -49,16 +49,26 @@ auto Lexer::getNextToken() -> Token {
         if (indentOffset > 0) {
             indentOffset -= INDENT_SPACES;
 
-            // Do we have any more BEGIN tokens to emit?  If yes then emit one now.
+            // Do we have any more INDENT tokens to emit?  If yes then emit one now.
             if (indentOffset) {
-                return Token(TokenType::BEGIN, "[Begin]", currentLine, currentColumn - currentToken.value.length() - indentOffset);
+                if (indentOffset < INDENT_SPACES) {
+                    indentOffset = INDENT_SPACES;
+                    return Token(TokenType::BAD_INDENT, "[Bad indent]", currentLine, currentColumn - currentToken.value.length() - indentOffset);
+                }
+
+                return Token(TokenType::INDENT, "[Indent]", currentLine, currentColumn - currentToken.value.length() - indentOffset);
             }
         } else {
             indentOffset += INDENT_SPACES;
 
-            // Do we have any more END tokens to emit?  If yes then emit one now.
+            // Do we have any more OUTDENT tokens to emit?  If yes then emit one now.
             if (indentOffset) {
-                return Token(TokenType::END, "[End]", currentLine, currentColumn - currentToken.value.length());
+                if (indentOffset > -INDENT_SPACES) {
+                    indentOffset = -INDENT_SPACES;
+                    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", currentLine, currentColumn - currentToken.value.length());
+                }
+
+                return Token(TokenType::OUTDENT, "[Outdent]", currentLine, currentColumn - currentToken.value.length());
             }
         }
 
@@ -102,16 +112,13 @@ auto Lexer::getNextToken() -> Token {
         indentOffset = currentToken.column - indentColumn;
         indentColumn = currentToken.column;
         if (indentOffset) {
-            if (indentOffset % INDENT_SPACES) {
-                currentToken.type = TokenType::BAD_INDENT;
-                return currentToken;
+            if (indentOffset >= INDENT_SPACES) {
+                return Token(TokenType::INDENT, "[Indent]", currentLine, currentColumn - currentToken.value.length() - indentOffset);
             }
 
-            if (indentOffset > 0) {
-                return Token(TokenType::BEGIN, "[Begin]", currentLine, currentColumn - currentToken.value.length() - indentOffset);
+            if (indentOffset <= -INDENT_SPACES) {
+                return Token(TokenType::OUTDENT, "[Outdent]", currentLine, currentColumn - currentToken.value.length());
             }
-
-            return Token(TokenType::END, "[End]", currentLine, currentColumn - currentToken.value.length());
         }
     }
 

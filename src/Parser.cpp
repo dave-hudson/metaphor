@@ -39,7 +39,7 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
         return defineNode;
     }
 
-    if (initToken.type != TokenType::BEGIN) {
+    if (initToken.type != TokenType::INDENT) {
         raiseSyntaxError("Expected indent for 'Define' block");
     }
 
@@ -51,7 +51,7 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
         case TokenType::END_OF_FILE:
             return defineNode;
 
-        case TokenType::END:
+        case TokenType::OUTDENT:
             if (indentLevel >= blockIndentLevel) {
                 break;
             }
@@ -84,7 +84,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
         return requireNode;
     }
 
-    if (initToken.type != TokenType::BEGIN) {
+    if (initToken.type != TokenType::INDENT) {
         raiseSyntaxError("Expected description or indent for 'Require' block");
     }
 
@@ -96,7 +96,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
         case TokenType::END_OF_FILE:
             return requireNode;
 
-        case TokenType::END:
+        case TokenType::OUTDENT:
             if (indentLevel >= blockIndentLevel) {
                 break;
             }
@@ -133,7 +133,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNod
         return requireNode;
     }
 
-    if (initToken.type != TokenType::BEGIN) {
+    if (initToken.type != TokenType::INDENT) {
         raiseSyntaxError("Expected description or indent for 'Example' block");
     }
 
@@ -145,7 +145,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNod
         case TokenType::END_OF_FILE:
             return requireNode;
 
-        case TokenType::END:
+        case TokenType::OUTDENT:
             if (indentLevel >= blockIndentLevel) {
                 break;
             }
@@ -235,11 +235,11 @@ auto Parser::getNextToken() -> Token {
             parseInclude();
             break;
 
-        case TokenType::BEGIN:
+        case TokenType::INDENT:
             indentLevel++;
             return currentToken;
 
-        case TokenType::END:
+        case TokenType::OUTDENT:
             indentLevel--;
             return currentToken;
 
