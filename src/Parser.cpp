@@ -3,19 +3,19 @@
 #include "Parser.hpp"
 
 Parser::Parser() :
-        currentToken(TokenType::NONE, "", 0, 0),
-        indentLevel(0) {
+        currentToken_(TokenType::NONE, "", 0, 0),
+        indentLevel_(0) {
 }
 
 auto Parser::getNextToken() -> Token {
-    while (!lexers.empty()) {
-        auto& lexerWithFilename = lexers.back();
-        currentToken = lexerWithFilename.lexer->getNextToken();
+    while (!lexers_.empty()) {
+        auto& lexerWithFilename = lexers_.back();
+        currentToken_ = lexerWithFilename.lexer_->getNextToken();
 
-        switch (currentToken.type) {
+        switch (currentToken_.type) {
         case TokenType::END_OF_FILE:
-            indentLevel = lexers.back().currentIndent;
-            lexers.pop_back();
+            indentLevel_ = lexers_.back().currentIndent_;
+            lexers_.pop_back();
             break;
 
         case TokenType::INCLUDE:
@@ -23,15 +23,15 @@ auto Parser::getNextToken() -> Token {
             break;
 
         case TokenType::INDENT:
-            indentLevel++;
-            return currentToken;
+            indentLevel_++;
+            return currentToken_;
 
         case TokenType::OUTDENT:
-            indentLevel--;
-            return currentToken;
+            indentLevel_--;
+            return currentToken_;
 
         default:
-            return currentToken;
+            return currentToken_;
         }
     }
 
@@ -39,32 +39,32 @@ auto Parser::getNextToken() -> Token {
 }
 
 auto Parser::raiseSyntaxError(const std::string& message) -> void {
-    const auto& token = currentToken;
-    std::string line = lexers.back().lexer->getCurrentLine();
+    const auto& token = currentToken_;
+    std::string line = lexers_.back().lexer_->getCurrentLine();
     std::string caret = "";
     for (int i = 1; i < token.column; i++) {
         caret += ' ';
     }
 
-    std::string currentFile = lexers.empty() ? "Unknown" : lexers.back().filename;
+    std::string currentFile = lexers_.empty() ? "Unknown" : lexers_.back().filename_;
     std::string errorMessage = message + ": line " + std::to_string(token.line) +
                                 ", column " + std::to_string(token.column) + ", file " + currentFile +
                                 "\n" + caret + "|\n" + caret + "v\n" + line;
-    parseErrors.push_back(errorMessage);
+    parseErrors_.push_back(errorMessage);
 }
 
 auto Parser::getSyntaxErrors() -> std::vector<std::string> {
-    return parseErrors;
+    return parseErrors_;
 }
 
 auto Parser::loadFile(const std::string& filename) -> void {
     std::filesystem::path canonicalFilename = std::filesystem::absolute(filename);
 
-    if (processedFiles.find(canonicalFilename) != processedFiles.end()) {
+    if (processedFiles_.find(canonicalFilename) != processedFiles_.end()) {
         throw std::runtime_error("'" + filename + "' has already been read via 'Include'");
     }
 
-    processedFiles.insert(canonicalFilename);
+    processedFiles_.insert(canonicalFilename);
 
     if (!std::filesystem::exists(canonicalFilename)) {
         throw std::runtime_error("File not found: " + filename);
@@ -76,8 +76,8 @@ auto Parser::loadFile(const std::string& filename) -> void {
     }
 
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    lexers.push_back({std::make_unique<Lexer>(content), filename, indentLevel});
-    indentLevel = 0;
+    lexers_.push_back({std::make_unique<Lexer>(content), filename, indentLevel_});
+    indentLevel_ = 0;
 }
 
 auto Parser::parseInclude() -> void {
@@ -103,7 +103,7 @@ auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode> {
         raiseSyntaxError("Expected indent for 'Goal' block");
     }
 
-    auto blockIndentLevel = indentLevel;
+    auto blockIndentLevel = indentLevel_;
     auto seenTokenType = TokenType::NONE;
 
     while (true) {
@@ -124,7 +124,7 @@ auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode> {
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            if (indentLevel >= blockIndentLevel) {
+            if (indentLevel_ >= blockIndentLevel) {
                 break;
             }
 
@@ -149,7 +149,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode>
         raiseSyntaxError("Expected description or indent for 'Require' block");
     }
 
-    auto blockIndentLevel = indentLevel;
+    auto blockIndentLevel = indentLevel_;
     auto seenTokenType = TokenType::NONE;
 
     while (true) {
@@ -175,7 +175,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode>
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            if (indentLevel >= blockIndentLevel) {
+            if (indentLevel_ >= blockIndentLevel) {
                 break;
             }
 
@@ -200,7 +200,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
         raiseSyntaxError("Expected description or indent for 'Example' block");
     }
 
-    auto blockIndentLevel = indentLevel;
+    auto blockIndentLevel = indentLevel_;
     auto seenTokenType = TokenType::NONE;
 
     while (true) {
@@ -251,7 +251,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            if (indentLevel >= blockIndentLevel) {
+            if (indentLevel_ >= blockIndentLevel) {
                 break;
             }
 
@@ -349,17 +349,17 @@ auto Parser::parse(const std::string& initial_file) -> bool {
         raiseSyntaxError("Expected 'Goal' keyword");
     }
 
-    syntaxTree = parseGoal(token);
+    syntaxTree_ = parseGoal(token);
 
     const auto& tokenNext = getNextToken();
     if (tokenNext.type != TokenType::END_OF_FILE) {
         raiseSyntaxError("Unexpected text after 'Goal' block");
     }
 
-    if (parseErrors.size() > 0) {
+    if (parseErrors_.size() > 0) {
         return false;
     }
 
-    syntaxTree->printTree();
+    syntaxTree_->printTree();
     return true;
 }

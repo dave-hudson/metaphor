@@ -8,12 +8,12 @@
 
 class ASTNode {
 public:
-    TokenType tokenType;
-    std::string value;
-    int line;
-    int column;
-    ASTNode* parentNode;
-    std::vector<std::unique_ptr<ASTNode>> childNodes;
+    TokenType tokenType_;
+    std::string value_;
+    int line_;
+    int column_;
+    ASTNode* parentNode_;
+    std::vector<std::unique_ptr<ASTNode>> childNodes_;
 
     ASTNode(const Token& token);
     auto addChild(std::unique_ptr<ASTNode> child) -> void;

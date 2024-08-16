@@ -19,16 +19,16 @@ private:
     auto consumeNewline() -> void;
     auto consumeWhitespace() -> void;
 
-    std::string input;                  // Content being lexed
-    size_t position;                    // Offset of the current character being lexed
-    size_t startOfLine;                 // Offset of the first character of the current line being lexed
-    size_t endOfLine;                   // Offset of the last character of the current line being lexed
-    int currentLine;                    // Current line number being processed (starting at 1)
-    int currentColumn;                  // Current column number being processed (starting at 1)
-    int indentColumn;
-    bool processingIndent;              // Are we processing indentation at the start of a line?
-    int indentOffset; 
-    Token currentToken;
+    std::string input_;                 // Content being lexed
+    size_t position_;                   // Offset of the current character being lexed
+    size_t startOfLine_;                // Offset of the first character of the current line being lexed
+    size_t endOfLine_;                  // Offset of the last character of the current line being lexed
+    int currentLine_;                   // Current line number being processed (starting at 1)
+    int currentColumn_;                 // Current column number being processed (starting at 1)
+    int indentColumn_;
+    bool processingIndent_;             // Are we processing indentation at the start of a line?
+    int indentOffset_;
+    Token currentToken_;
 
     const std::map<std::string, TokenType> keyword_map = {
         {"Include:", TokenType::INCLUDE},

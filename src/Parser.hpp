@@ -19,9 +19,9 @@ public:
 
 private:
     struct LexerWithFilename {
-        std::unique_ptr<Lexer> lexer;   // A lexer
-        std::string filename;           // The filename associated with the lexer
-        int currentIndent;              // The current indentation level when this lexer was invoked
+        std::unique_ptr<Lexer> lexer_;  // A lexer
+        std::string filename_;          // The filename associated with the lexer
+        int currentIndent_;             // The current indentation level when this lexer was invoked
     };
 
     auto getNextToken() -> Token;
@@ -36,14 +36,14 @@ private:
     auto parseThen(const Token& ThenToken) -> std::unique_ptr<ASTNode>;
     auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;
 
-    std::vector<LexerWithFilename> lexers;
+    std::vector<LexerWithFilename> lexers_;
                                         // A vector of lexers currently being used for different files.
-    Token currentToken;
-    std::set<std::filesystem::path> processedFiles;
+    Token currentToken_;
+    std::set<std::filesystem::path> processedFiles_;
                                         // A set of files that have already been included so we can avoid recursion.
-    std::unique_ptr<ASTNode> syntaxTree;
-    int indentLevel;                    // Indent level withing the current file
-    std::vector<std::string> parseErrors;
+    std::unique_ptr<ASTNode> syntaxTree_;
+    int indentLevel_;                   // Indent level withing the current file
+    std::vector<std::string> parseErrors_;
 };
 
 #endif // __PARSER_HPP
