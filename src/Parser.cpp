@@ -2,28 +2,6 @@
 
 #include "Parser.hpp"
 
-ParseNode::ParseNode(const Token& token) :
-        tokenType(token.type),
-        value(token.value),
-        line(token.line),
-        column(token.column),
-        parentNode(NULL) {
-}
-
-// Method to add a child
-auto ParseNode::addChild(std::unique_ptr<ParseNode> child) -> void {
-    child->parentNode = this;
-    childNodes.push_back(std::move(child));
-}
-
-// Method to print the tree for debugging
-auto ParseNode::printTree(int level) const -> void {
-    std::cout << std::string(level * 2, ' ') << value << std::endl;
-    for (const auto& child : childNodes) {
-        child->printTree(level + 1);
-    }
-}
-
 Parser::Parser() :
         currentToken(TokenType::NONE, "", 0, 0),
         indentLevel(0) {
@@ -112,8 +90,8 @@ auto Parser::parseInclude() -> void {
     loadFile(filename);
 }
 
-auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ParseNode> {
-    auto defineNode = std::make_unique<ParseNode>(defineToken);
+auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode> {
+    auto defineNode = std::make_unique<ASTNode>(defineToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -158,8 +136,8 @@ auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ParseNode> {
     }
 }
 
-auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode> {
-    auto requireNode = std::make_unique<ParseNode>(requireToken);
+auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode> {
+    auto requireNode = std::make_unique<ASTNode>(requireToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -209,8 +187,8 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
     }
 }
 
-auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNode> {
-    auto requireNode = std::make_unique<ParseNode>(exampleToken);
+auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode> {
+    auto requireNode = std::make_unique<ASTNode>(exampleToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -293,8 +271,8 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNod
     }
 }
 
-auto Parser::parseGiven(const Token& givenToken) -> std::unique_ptr<ParseNode> {
-    auto givenNode = std::make_unique<ParseNode>(givenToken);
+auto Parser::parseGiven(const Token& givenToken) -> std::unique_ptr<ASTNode> {
+    auto givenNode = std::make_unique<ASTNode>(givenToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -315,8 +293,8 @@ auto Parser::parseGiven(const Token& givenToken) -> std::unique_ptr<ParseNode> {
     return givenNode;
 }
 
-auto Parser::parseWhen(const Token& givenToken) -> std::unique_ptr<ParseNode> {
-    auto givenNode = std::make_unique<ParseNode>(givenToken);
+auto Parser::parseWhen(const Token& givenToken) -> std::unique_ptr<ASTNode> {
+    auto givenNode = std::make_unique<ASTNode>(givenToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -337,8 +315,8 @@ auto Parser::parseWhen(const Token& givenToken) -> std::unique_ptr<ParseNode> {
     return givenNode;
 }
 
-auto Parser::parseThen(const Token& givenToken) -> std::unique_ptr<ParseNode> {
-    auto givenNode = std::make_unique<ParseNode>(givenToken);
+auto Parser::parseThen(const Token& givenToken) -> std::unique_ptr<ASTNode> {
+    auto givenNode = std::make_unique<ASTNode>(givenToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -359,8 +337,8 @@ auto Parser::parseThen(const Token& givenToken) -> std::unique_ptr<ParseNode> {
     return givenNode;
 }
 
-auto Parser::parseText(const Token& textToken) -> std::unique_ptr<ParseNode> {
-    return std::make_unique<ParseNode>(textToken);
+auto Parser::parseText(const Token& textToken) -> std::unique_ptr<ASTNode> {
+    return std::make_unique<ASTNode>(textToken);
 }
 
 auto Parser::parse(const std::string& initial_file) -> bool {

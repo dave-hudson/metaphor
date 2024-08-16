@@ -9,20 +9,7 @@
 #include <filesystem>
 
 #include "Lexer.hpp"
-
-class ParseNode {
-public:
-    TokenType tokenType;
-    std::string value;
-    int line;
-    int column;
-    ParseNode* parentNode;
-    std::vector<std::unique_ptr<ParseNode>> childNodes;
-
-    ParseNode(const Token& token);
-    auto addChild(std::unique_ptr<ParseNode> child) -> void;
-    auto printTree(int level = 0) const -> void;
-};
+#include "ASTNode.hpp"
 
 class Parser {
 public:
@@ -41,20 +28,20 @@ private:
     auto raiseSyntaxError(const std::string& message) -> void;
     auto loadFile(const std::string& filename) -> void;
     auto parseInclude() -> void;
-    auto parseGoal(const Token& defineToken) -> std::unique_ptr<ParseNode>;
-    auto parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode>;
-    auto parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNode>;
-    auto parseGiven(const Token& givenToken) -> std::unique_ptr<ParseNode>;
-    auto parseWhen(const Token& WhenToken) -> std::unique_ptr<ParseNode>;
-    auto parseThen(const Token& ThenToken) -> std::unique_ptr<ParseNode>;
-    auto parseText(const Token& textToken) -> std::unique_ptr<ParseNode>;
+    auto parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode>;
+    auto parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode>;
+    auto parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>;
+    auto parseGiven(const Token& givenToken) -> std::unique_ptr<ASTNode>;
+    auto parseWhen(const Token& WhenToken) -> std::unique_ptr<ASTNode>;
+    auto parseThen(const Token& ThenToken) -> std::unique_ptr<ASTNode>;
+    auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;
 
     std::vector<LexerWithFilename> lexers;
                                         // A vector of lexers currently being used for different files.
     Token currentToken;
     std::set<std::filesystem::path> processedFiles;
                                         // A set of files that have already been included so we can avoid recursion.
-    std::unique_ptr<ParseNode> syntaxTree;
+    std::unique_ptr<ASTNode> syntaxTree;
     int indentLevel;                    // Indent level withing the current file
     std::vector<std::string> parseErrors;
 };
