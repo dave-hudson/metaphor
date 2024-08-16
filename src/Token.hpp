@@ -41,6 +41,8 @@ public:
     std::string value;
     int line;
     int column;
+    std::string filename;
+    std::string input;
 };
 
 #endif // __TOKEN_HPP

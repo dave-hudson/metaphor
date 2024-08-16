@@ -25,7 +25,7 @@ private:
     };
 
     auto getNextToken() -> Token;
-    auto raiseSyntaxError(const std::string& message) -> void;
+    auto raiseSyntaxError(const Token& token, const std::string& message) -> void;
     auto loadFile(const std::string& filename) -> void;
     auto parseInclude() -> void;
     auto parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode>;

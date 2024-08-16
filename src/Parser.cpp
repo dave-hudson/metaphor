@@ -38,15 +38,22 @@ auto Parser::getNextToken() -> Token {
     return Token(TokenType::END_OF_FILE, "", 0, 0);
 }
 
-auto Parser::raiseSyntaxError(const std::string& message) -> void {
-    const auto& token = currentToken_;
-    std::string line = lexers_.back().lexer_->getCurrentLine();
+auto Parser::raiseSyntaxError(const Token& token, const std::string& message) -> void {
+    std::string line = token.input;
+    if (line.length() == 0) {
+        line = lexers_.back().lexer_->getCurrentLine();
+    }
+
     std::string caret = "";
     for (int i = 1; i < token.column; i++) {
         caret += ' ';
     }
 
-    std::string currentFile = lexers_.empty() ? "Unknown" : lexers_.back().filename_;
+    std::string currentFile = token.filename;
+    if (currentFile.length() == 0) {
+        currentFile = lexers_.empty() ? "Unknown" : lexers_.back().filename_;
+    }
+
     std::string errorMessage = message + ": line " + std::to_string(token.line) +
                                 ", column " + std::to_string(token.column) + ", file " + currentFile +
                                 "\n" + caret + "|\n" + caret + "v\n" + line;
@@ -83,7 +90,7 @@ auto Parser::loadFile(const std::string& filename) -> void {
 auto Parser::parseInclude() -> void {
     const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected file name in 'Include'");
+        raiseSyntaxError(token, "Expected file name in 'Include'");
     }
 
     std::string filename = token.value;
@@ -100,7 +107,7 @@ auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected indent for 'Goal' block");
+        raiseSyntaxError(initToken, "Expected indent for 'Goal' block");
     }
 
     auto blockIndentLevel = indentLevel_;
@@ -111,7 +118,7 @@ auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode> {
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError("Text must come first in a 'Goal' block");
+                raiseSyntaxError(token, "Text must come first in a 'Goal' block");
             }
 
             defineNode->addChild(parseText(token));
@@ -136,13 +143,16 @@ auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode> {
             return defineNode;
 
         default:
-            raiseSyntaxError("Unexpected '" + token.value + "' in 'Goal' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Goal' block");
         }
     }
 }
 
 auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
     auto storyNode = std::make_unique<ASTNode>(storyToken);
+    auto storyToken2 = storyToken;
+    storyToken2.filename = lexers_.back().filename_;
+    storyToken2.input = lexers_.back().lexer_->getCurrentLine();
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -151,7 +161,7 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'Story' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Story' block");
     }
 
     auto blockIndentLevel = indentLevel_;
@@ -162,7 +172,7 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError("Text must come first in a 'Story' block");
+                raiseSyntaxError(token, "Text must come first in a 'Story' block");
             }
 
             storyNode->addChild(parseText(token));
@@ -170,7 +180,7 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
 
         case TokenType::AS:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError("Can only have one 'As' in a 'Story' block");
+                raiseSyntaxError(token, "Can only have one 'As' in a 'Story' block");
             }
 
             storyNode->addChild(parseGiven(token));
@@ -179,11 +189,11 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
 
         case TokenType::I:
             if (seenTokenType == TokenType::NONE) {
-                raiseSyntaxError("Require 'As' before 'I' in a 'Story' block");
+                raiseSyntaxError(token, "Require 'As' before 'I' in a 'Story' block");
             }
 
             if (seenTokenType == TokenType::I || seenTokenType == TokenType::SO) {
-                raiseSyntaxError("Can only have one 'I' in a 'Story' block");
+                raiseSyntaxError(token, "Can only have one 'I' in a 'Story' block");
             }
 
             storyNode->addChild(parseWhen(token));
@@ -192,11 +202,11 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
 
         case TokenType::SO:
             if (seenTokenType == TokenType::NONE || seenTokenType == TokenType::AS) {
-                raiseSyntaxError("Require 'As' and 'I' before 'So' in a 'Story' block");
+                raiseSyntaxError(token, "Require 'As' and 'I' before 'So' in a 'Story' block");
             }
 
             if (seenTokenType == TokenType::SO) {
-                raiseSyntaxError("Can only have one 'So' in a 'Story' block");
+                raiseSyntaxError(token, "Can only have one 'So' in a 'Story' block");
             }
 
             storyNode->addChild(parseThen(token));
@@ -210,17 +220,17 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
             }
 
             if (seenTokenType == TokenType::I) {
-                raiseSyntaxError("No 'So' in the 'Story' block");
+                raiseSyntaxError(storyToken2, "No 'So' in the 'Story' block");
             }
 
             if (seenTokenType == TokenType::AS) {
-                raiseSyntaxError("No 'I' or 'So' in the 'Story' block");
+                raiseSyntaxError(storyToken2, "No 'I' or 'So' in the 'Story' block");
             }
 
             return storyNode;
 
         default:
-            raiseSyntaxError("Unexpected '" + token.value + "' in 'Story' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Story' block");
         }
     }
 }
@@ -235,12 +245,12 @@ auto Parser::parseAs(const Token& asToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'As' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'As' block");
     }
 
     const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected text for 'As' block");
+        raiseSyntaxError(token, "Expected text for 'As' block");
     }
 
     givenNode->addChild(parseText(token));
@@ -257,12 +267,12 @@ auto Parser::parseI(const Token& iToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'I' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'I' block");
     }
 
     const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected text for 'I' block");
+        raiseSyntaxError(token, "Expected text for 'I' block");
     }
 
     givenNode->addChild(parseText(token));
@@ -279,12 +289,12 @@ auto Parser::parseSo(const Token& soToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'So' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'So' block");
     }
 
     const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected text for 'So' block");
+        raiseSyntaxError(token, "Expected text for 'So' block");
     }
 
     givenNode->addChild(parseText(token));
@@ -301,7 +311,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode>
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'Require' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Require' block");
     }
 
     auto blockIndentLevel = indentLevel_;
@@ -312,7 +322,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode>
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError("Text must come first in a 'Require' block");
+                raiseSyntaxError(token, "Text must come first in a 'Require' block");
             }
 
             requireNode->addChild(parseText(token));
@@ -337,7 +347,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode>
             return requireNode;
 
         default:
-            raiseSyntaxError("Unexpected '" + token.value + "' in 'Require' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Require' block");
         }
     }
 }
@@ -352,7 +362,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'Example' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Example' block");
     }
 
     auto blockIndentLevel = indentLevel_;
@@ -363,7 +373,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError("Text must come first in an 'Example' block");
+                raiseSyntaxError(token, "Text must come first in an 'Example' block");
             }
 
             exampleNode->addChild(parseText(token));
@@ -371,7 +381,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
 
         case TokenType::GIVEN:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError("Can only have one 'Given' in an 'Example' block");
+                raiseSyntaxError(token, "Can only have one 'Given' in an 'Example' block");
             }
 
             exampleNode->addChild(parseGiven(token));
@@ -380,11 +390,11 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
 
         case TokenType::WHEN:
             if (seenTokenType == TokenType::NONE) {
-                raiseSyntaxError("Require 'Given' before 'When' in an 'Example' block");
+                raiseSyntaxError(token, "Require 'Given' before 'When' in an 'Example' block");
             }
 
             if (seenTokenType == TokenType::WHEN || seenTokenType == TokenType::THEN) {
-                raiseSyntaxError("Can only have one 'When' in an 'Example' block");
+                raiseSyntaxError(token, "Can only have one 'When' in an 'Example' block");
             }
 
             exampleNode->addChild(parseWhen(token));
@@ -393,11 +403,11 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
 
         case TokenType::THEN:
             if (seenTokenType == TokenType::NONE || seenTokenType == TokenType::GIVEN) {
-                raiseSyntaxError("Require 'Given' and 'When' before 'Then' in an 'Example' block");
+                raiseSyntaxError(token, "Require 'Given' and 'When' before 'Then' in an 'Example' block");
             }
 
             if (seenTokenType == TokenType::THEN) {
-                raiseSyntaxError("Can only have one 'Then' in an 'Example' block");
+                raiseSyntaxError(token, "Can only have one 'Then' in an 'Example' block");
             }
 
             exampleNode->addChild(parseThen(token));
@@ -411,17 +421,17 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
             }
 
             if (seenTokenType == TokenType::WHEN) {
-                raiseSyntaxError("No 'Then' in the 'Example' block");
+                raiseSyntaxError(token, "No 'Then' in the 'Example' block");
             }
 
             if (seenTokenType == TokenType::GIVEN) {
-                raiseSyntaxError("No 'When' or 'Then' in the 'Example' block");
+                raiseSyntaxError(token, "No 'When' or 'Then' in the 'Example' block");
             }
 
             return exampleNode;
 
         default:
-            raiseSyntaxError("Unexpected '" + token.value + "' in 'Example' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Example' block");
         }
     }
 }
@@ -436,12 +446,12 @@ auto Parser::parseGiven(const Token& givenToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'Given' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Given' block");
     }
 
     const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected text for 'Given' block");
+        raiseSyntaxError(token, "Expected text for 'Given' block");
     }
 
     givenNode->addChild(parseText(token));
@@ -458,12 +468,12 @@ auto Parser::parseWhen(const Token& whenToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'When' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'When' block");
     }
 
     const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected text for 'When' block");
+        raiseSyntaxError(token, "Expected text for 'When' block");
     }
 
     givenNode->addChild(parseText(token));
@@ -480,12 +490,12 @@ auto Parser::parseThen(const Token& thenToken) -> std::unique_ptr<ASTNode> {
     }
 
     if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError("Expected description or indent for 'Then' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Then' block");
     }
 
     const auto& token = getNextToken();
     if (token.type != TokenType::TEXT) {
-        raiseSyntaxError("Expected text for 'Then' block");
+        raiseSyntaxError(token, "Expected text for 'Then' block");
     }
 
     givenNode->addChild(parseText(token));
@@ -501,14 +511,14 @@ auto Parser::parse(const std::string& initial_file) -> bool {
 
     const auto& token = getNextToken();
     if (token.type != TokenType::GOAL) {
-        raiseSyntaxError("Expected 'Goal' keyword");
+        raiseSyntaxError(token, "Expected 'Goal' keyword");
     }
 
     syntaxTree_ = parseGoal(token);
 
     const auto& tokenNext = getNextToken();
     if (tokenNext.type != TokenType::END_OF_FILE) {
-        raiseSyntaxError("Unexpected text after 'Goal' block");
+        raiseSyntaxError(tokenNext, "Unexpected text after 'Goal' block");
     }
 
     if (parseErrors_.size() > 0) {
