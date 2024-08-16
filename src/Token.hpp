@@ -5,11 +5,12 @@
 #include <ostream>
 
 enum class TokenType {
+    NONE,
     INDENT,
     OUTDENT,
     INCLUDE,
     TEXT,
-    DEFINE,
+    GOAL,
     REQUIRE,
     EXAMPLE,
     GIVEN,

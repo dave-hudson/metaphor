@@ -1,6 +1,6 @@
 # top_level.m6r
 
-Define: Top Level Feature
+Goal: Top Level Feature
   This is the top-level feature file.
 
   Include: second_level.m6r
