@@ -34,8 +34,7 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
-        auto textNode = std::make_unique<ParseNode>(initToken);
-        defineNode->addChild(std::move(textNode));
+        defineNode->addChild(parseText(initToken));
         return defineNode;
     }
 
@@ -48,8 +47,13 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
     while (true) {
         const auto& token = getNextToken();
         switch (token.type) {
-        case TokenType::END_OF_FILE:
-            return defineNode;
+        case TokenType::TEXT:
+            defineNode->addChild(parseText(token));
+            break;
+
+        case TokenType::REQUIRE:
+            defineNode->addChild(parseRequire(token));
+            break;
 
         case TokenType::OUTDENT:
             if (indentLevel >= blockIndentLevel) {
@@ -58,15 +62,8 @@ auto Parser::parseDefine(const Token& defineToken) -> std::unique_ptr<ParseNode>
 
             return defineNode;
 
-        case TokenType::REQUIRE:
-            defineNode->addChild(parseRequire(token));
-            break;
-
-        case TokenType::TEXT: {
-                auto textNode = std::make_unique<ParseNode>(token);
-                defineNode->addChild(std::move(textNode));
-            }
-            break;
+        case TokenType::END_OF_FILE:
+            return defineNode;
 
         default:
             raiseSyntaxError("Unexpected token in 'Define' block");
@@ -79,8 +76,7 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
-        auto textNode = std::make_unique<ParseNode>(initToken);
-        requireNode->addChild(std::move(textNode));
+        requireNode->addChild(parseText(initToken));
         return requireNode;
     }
 
@@ -93,15 +89,9 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
     while (true) {
         const auto& token = getNextToken();
         switch (token.type) {
-        case TokenType::END_OF_FILE:
-            return requireNode;
-
-        case TokenType::OUTDENT:
-            if (indentLevel >= blockIndentLevel) {
-                break;
-            }
-
-            return requireNode;
+        case TokenType::TEXT:
+            requireNode->addChild(parseText(token));
+            break;
 
         case TokenType::REQUIRE:
             requireNode->addChild(parseRequire(token));
@@ -111,11 +101,15 @@ auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNod
             requireNode->addChild(parseExample(token));
             break;
 
-        case TokenType::TEXT: {
-                auto textNode = std::make_unique<ParseNode>(token);
-                requireNode->addChild(std::move(textNode));
+        case TokenType::OUTDENT:
+            if (indentLevel >= blockIndentLevel) {
+                break;
             }
-            break;
+
+            return requireNode;
+
+        case TokenType::END_OF_FILE:
+            return requireNode;
 
         default:
             raiseSyntaxError("Unexpected token in 'Require' block");
@@ -128,8 +122,7 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNod
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
-        auto textNode = std::make_unique<ParseNode>(initToken);
-        requireNode->addChild(std::move(textNode));
+        requireNode->addChild(parseText(initToken));
         return requireNode;
     }
 
@@ -138,30 +131,142 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNod
     }
 
     auto blockIndentLevel = indentLevel;
+    auto seenTokenType = TokenType::EXAMPLE;
 
     while (true) {
         const auto& token = getNextToken();
         switch (token.type) {
-        case TokenType::END_OF_FILE:
-            return requireNode;
+        case TokenType::TEXT:
+            requireNode->addChild(parseText(token));
+            break;
+
+        case TokenType::GIVEN:
+            if (seenTokenType != TokenType::EXAMPLE) {
+                raiseSyntaxError("Can only have one 'Given' in an 'Example' block");
+            }
+
+            requireNode->addChild(parseGiven(token));
+            seenTokenType = TokenType::GIVEN;
+            break;
+
+        case TokenType::WHEN:
+            if (seenTokenType == TokenType::EXAMPLE) {
+                raiseSyntaxError("Require 'Given' before 'When' in an 'Example' block");
+            }
+
+            if (seenTokenType == TokenType::WHEN || seenTokenType == TokenType::THEN) {
+                raiseSyntaxError("Can only have one 'When' in an 'Example' block");
+            }
+
+            requireNode->addChild(parseWhen(token));
+            seenTokenType = TokenType::WHEN;
+            break;
+
+        case TokenType::THEN:
+            if (seenTokenType == TokenType::EXAMPLE || seenTokenType == TokenType::GIVEN) {
+                raiseSyntaxError("Require 'Given' and 'When' before 'Then' in an 'Example' block");
+            }
+
+            if (seenTokenType == TokenType::THEN) {
+                raiseSyntaxError("Can only have one 'Then' in an 'Example' block");
+            }
+
+            requireNode->addChild(parseThen(token));
+            seenTokenType = TokenType::THEN;
+            break;
 
         case TokenType::OUTDENT:
             if (indentLevel >= blockIndentLevel) {
                 break;
             }
 
+            if (seenTokenType == TokenType::WHEN) {
+                raiseSyntaxError("No 'Then' in the 'Example' block");
+            }
+
+            if (seenTokenType == TokenType::GIVEN) {
+                raiseSyntaxError("No 'When' or 'Then' in the 'Example' block");
+            }
+
             return requireNode;
 
-        case TokenType::TEXT: {
-                auto textNode = std::make_unique<ParseNode>(token);
-                requireNode->addChild(std::move(textNode));
-            }
-            break;
+        case TokenType::END_OF_FILE:
+            return requireNode;
 
         default:
             raiseSyntaxError("Unexpected token in 'Example' block");
         }
     }
+}
+
+auto Parser::parseGiven(const Token& givenToken) -> std::unique_ptr<ParseNode> {
+    auto givenNode = std::make_unique<ParseNode>(givenToken);
+
+    const auto& initToken = getNextToken();
+    if (initToken.type == TokenType::TEXT) {
+        givenNode->addChild(parseText(initToken));
+        return givenNode;
+    }
+
+    if (initToken.type != TokenType::INDENT) {
+        raiseSyntaxError("Expected description or indent for 'Given' block");
+    }
+
+    const auto& token = getNextToken();
+    if (token.type != TokenType::TEXT) {
+        raiseSyntaxError("Expected text for 'Given' block");
+    }
+
+    givenNode->addChild(parseText(token));
+    return givenNode;
+}
+
+auto Parser::parseWhen(const Token& givenToken) -> std::unique_ptr<ParseNode> {
+    auto givenNode = std::make_unique<ParseNode>(givenToken);
+
+    const auto& initToken = getNextToken();
+    if (initToken.type == TokenType::TEXT) {
+        givenNode->addChild(parseText(initToken));
+        return givenNode;
+    }
+
+    if (initToken.type != TokenType::INDENT) {
+        raiseSyntaxError("Expected description or indent for 'When' block");
+    }
+
+    const auto& token = getNextToken();
+    if (token.type != TokenType::TEXT) {
+        raiseSyntaxError("Expected text for 'When' block");
+    }
+
+    givenNode->addChild(parseText(token));
+    return givenNode;
+}
+
+auto Parser::parseThen(const Token& givenToken) -> std::unique_ptr<ParseNode> {
+    auto givenNode = std::make_unique<ParseNode>(givenToken);
+
+    const auto& initToken = getNextToken();
+    if (initToken.type == TokenType::TEXT) {
+        givenNode->addChild(parseText(initToken));
+        return givenNode;
+    }
+
+    if (initToken.type != TokenType::INDENT) {
+        raiseSyntaxError("Expected description or indent for 'Then' block");
+    }
+
+    const auto& token = getNextToken();
+    if (token.type != TokenType::TEXT) {
+        raiseSyntaxError("Expected text for 'Then' block");
+    }
+
+    givenNode->addChild(parseText(token));
+    return givenNode;
+}
+
+auto Parser::parseText(const Token& textToken) -> std::unique_ptr<ParseNode> {
+    return std::make_unique<ParseNode>(textToken);
 }
 
 auto Parser::parseInclude() -> void {

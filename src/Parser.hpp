@@ -41,6 +41,10 @@ private:
     auto parseInclude() -> void;
     auto parseRequire(const Token& requireToken) -> std::unique_ptr<ParseNode>;
     auto parseExample(const Token& exampleToken) -> std::unique_ptr<ParseNode>;
+    auto parseGiven(const Token& givenToken) -> std::unique_ptr<ParseNode>;
+    auto parseWhen(const Token& WhenToken) -> std::unique_ptr<ParseNode>;
+    auto parseThen(const Token& ThenToken) -> std::unique_ptr<ParseNode>;
+    auto parseText(const Token& textToken) -> std::unique_ptr<ParseNode>;
     auto loadFile(const std::string& filename) -> void;
     auto getNextToken() -> Token;
     auto raiseSyntaxError(const std::string& message) -> void;
