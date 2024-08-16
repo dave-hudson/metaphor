@@ -1,6 +1,11 @@
 Goal:
   I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
+  Story:
+    As: A website developer
+    I: Want to pre-render all the pages of my website
+    So: I can allow the website to be crawled by spiders that cannot render JavaScript.
+
   Require:
     Environment and dependency setup
 

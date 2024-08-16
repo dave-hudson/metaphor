@@ -33,6 +33,10 @@ private:
     const std::map<std::string, TokenType> keyword_map = {
         {"Include:", TokenType::INCLUDE},
         {"Goal:", TokenType::GOAL},
+        {"Story:", TokenType::STORY},
+        {"As:", TokenType::AS},
+        {"I:", TokenType::I},
+        {"So:", TokenType::SO},
         {"Require:", TokenType::REQUIRE},
         {"Example:", TokenType::EXAMPLE},
         {"Given:", TokenType::GIVEN},
