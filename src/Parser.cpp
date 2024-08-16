@@ -25,7 +25,7 @@ auto ParseNode::printTree(int level) const -> void {
 }
 
 Parser::Parser() :
-        currentToken(TokenType::END_OF_FILE, "", 0, 0),
+        currentToken(TokenType::NONE, "", 0, 0),
         indentLevel(0) {
 }
 
@@ -77,6 +77,29 @@ auto Parser::raiseSyntaxError(const std::string& message) -> void {
 
 auto Parser::getSyntaxErrors() -> std::vector<std::string> {
     return parseErrors;
+}
+
+auto Parser::loadFile(const std::string& filename) -> void {
+    std::filesystem::path canonicalFilename = std::filesystem::absolute(filename);
+
+    if (processedFiles.find(canonicalFilename) != processedFiles.end()) {
+        throw std::runtime_error("'" + filename + "' has already been read via 'Include'");
+    }
+
+    processedFiles.insert(canonicalFilename);
+
+    if (!std::filesystem::exists(canonicalFilename)) {
+        throw std::runtime_error("File not found: " + filename);
+    }
+
+    std::ifstream file(canonicalFilename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file: " + filename);
+    }
+
+    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    lexers.push_back({std::make_unique<Lexer>(content), filename, indentLevel});
+    indentLevel = 0;
 }
 
 auto Parser::parseInclude() -> void {
@@ -361,27 +384,4 @@ auto Parser::parse(const std::string& initial_file) -> bool {
 
     syntaxTree->printTree();
     return true;
-}
-
-auto Parser::loadFile(const std::string& filename) -> void {
-    std::filesystem::path canonicalFilename = std::filesystem::absolute(filename);
-
-    if (processedFiles.find(canonicalFilename) != processedFiles.end()) {
-        throw std::runtime_error("Infinite loop detected: '" + canonicalFilename.string() + "' has already been processed.");
-    }
-
-    processedFiles.insert(canonicalFilename);
-
-    if (!std::filesystem::exists(canonicalFilename)) {
-        throw std::runtime_error("File not found: " + canonicalFilename.string());
-    }
-
-    std::ifstream file(canonicalFilename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open file: " + canonicalFilename.string());
-    }
-
-    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    lexers.push_back({std::make_unique<Lexer>(content), canonicalFilename.string(), indentLevel});
-    indentLevel = 0;
 }
