@@ -83,7 +83,6 @@ auto Parser::loadFile(const std::string& filename) -> void {
 
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
     lexers_.push_back({std::make_unique<Lexer>(content), filename});
-    indentLevel_ = 0;
 }
 
 auto Parser::parseInclude() -> void {
