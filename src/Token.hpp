@@ -27,8 +27,9 @@ enum class TokenType {
 
 class Token {
 public:
-    Token(TokenType type, std::string value, int line, int column)
-        : type(type), value(std::move(value)), line(line), column(column) {}
+    Token(TokenType type, std::string value, std::string input, std::string filename, int line, int column)
+            : type(type), value(std::move(value)), input(input), filename(filename), line(line), column(column) {
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Token& token) {
         os << "Token(type=" << static_cast<int>(token.type)
@@ -39,10 +40,10 @@ public:
 
     TokenType type;
     std::string value;
+    std::string input;
+    std::string filename;
     int line;
     int column;
-    std::string filename;
-    std::string input;
 };
 
 #endif // __TOKEN_HPP

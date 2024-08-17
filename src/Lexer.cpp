@@ -1,12 +1,13 @@
 #include <cctype>
 #include <iostream>
+#include <fstream>
 
 #include "Lexer.hpp"
 
 #define INDENT_SPACES 2
 
-Lexer::Lexer(const std::string& input) :
-        input_(input),
+Lexer::Lexer(const std::string& filename) :
+        filename_(filename),
         position_(0),
         startOfLine_(0),
         endOfLine_(0),
@@ -15,8 +16,19 @@ Lexer::Lexer(const std::string& input) :
         indentColumn_(1),
         processingIndent_(true),
         indentOffset_(0),
-        currentToken_(TokenType::END_OF_FILE, "", 0, 0) {
+        currentToken_(TokenType::END_OF_FILE, "", "", "", 0, 0) {
     updateEndOfLine();
+
+    if (!std::filesystem::exists(filename)) {
+        throw std::runtime_error("File not found: " + filename);
+    }
+
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file: " + filename);
+    }
+
+    input_.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 }
 
 auto Lexer::updateEndOfLine() -> void {
@@ -40,6 +52,8 @@ auto Lexer::updateEndOfLine() -> void {
 
         endOfLine_++;
     }
+
+    line_ = input_.substr(startOfLine_, endOfLine_ - startOfLine_ + 1);
 }
 
 auto Lexer::getNextToken() -> Token {
@@ -53,10 +67,10 @@ auto Lexer::getNextToken() -> Token {
             if (indentOffset_) {
                 if (indentOffset_ < INDENT_SPACES) {
                     indentOffset_ = INDENT_SPACES;
-                    return Token(TokenType::BAD_INDENT, "[Bad indent]", currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+                    return Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
                 }
 
-                return Token(TokenType::INDENT, "[Indent]", currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+                return Token(TokenType::INDENT, "[Indent]", filename_, line_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
             }
         } else {
             indentOffset_ += INDENT_SPACES;
@@ -65,10 +79,10 @@ auto Lexer::getNextToken() -> Token {
             if (indentOffset_) {
                 if (indentOffset_ > -INDENT_SPACES) {
                     indentOffset_ = -INDENT_SPACES;
-                    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", currentLine_, currentColumn_ - currentToken_.value.length());
+                    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
                 }
 
-                return Token(TokenType::OUTDENT, "[Outdent]", currentLine_, currentColumn_ - currentToken_.value.length());
+                return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
             }
         }
 
@@ -78,7 +92,7 @@ auto Lexer::getNextToken() -> Token {
     // Get the next token.
     while (true) {
         if (position_ >= input_.size()) {
-            currentToken_ = Token(TokenType::END_OF_FILE, "", currentLine_, 1);
+            currentToken_ = Token(TokenType::END_OF_FILE, "", line_, filename_, currentLine_, 1);
             break;
         }
 
@@ -114,11 +128,11 @@ auto Lexer::getNextToken() -> Token {
         indentColumn_ = currentToken_.column;
         if (indentOffset_) {
             if (indentOffset_ >= INDENT_SPACES) {
-                return Token(TokenType::INDENT, "[Indent]", currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+                return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
             }
 
             if (indentOffset_ <= -INDENT_SPACES) {
-                return Token(TokenType::OUTDENT, "[Outdent]", currentLine_, currentColumn_ - currentToken_.value.length());
+                return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
             }
         }
     }
@@ -138,7 +152,7 @@ auto Lexer::readKeywordOrText() -> Token {
     std::string word = input_.substr(startPosition, position_ - startPosition);
 
     if (keyword_map.find(word) != keyword_map.end()) {
-        return Token(keyword_map.at(word), word, currentLine_, startColumn);
+        return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
     }
 
     while (position_ < input_.size() && input_[position_] != '\n' && input_[position_] != '#') {
@@ -146,7 +160,7 @@ auto Lexer::readKeywordOrText() -> Token {
         currentColumn_++;
     }
 
-    return Token(TokenType::TEXT, input_.substr(startPosition, position_ - startPosition), currentLine_, startColumn);
+    return Token(TokenType::TEXT, input_.substr(startPosition, position_ - startPosition), line_, filename_, currentLine_, startColumn);
 }
 
 auto Lexer::consumeNewline() -> void {
@@ -160,8 +174,4 @@ auto Lexer::consumeWhitespace() -> void {
         position_++;
         currentColumn_++;
     }
-}
-
-auto Lexer::getCurrentLine() -> std::string {
-    return input_.substr(startOfLine_, endOfLine_ - startOfLine_ + 1);
 }

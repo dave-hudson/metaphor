@@ -8,10 +8,9 @@
 
 class Lexer {
 public:
-    Lexer(const std::string& input);
+    Lexer(const std::string& filename);
 
     auto getNextToken() -> Token;
-    auto getCurrentLine() -> std::string;
 
 private:
     auto updateEndOfLine() -> void;
@@ -19,7 +18,9 @@ private:
     auto consumeNewline() -> void;
     auto consumeWhitespace() -> void;
 
+    std::string filename_;              // File we're lexing
     std::string input_;                 // Content being lexed
+    std::string line_;                  // Line curently being lexed
     size_t position_;                   // Offset of the current character being lexed
     size_t startOfLine_;                // Offset of the first character of the current line being lexed
     size_t endOfLine_;                  // Offset of the last character of the current line being lexed

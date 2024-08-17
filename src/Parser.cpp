@@ -1,9 +1,7 @@
-#include <fstream>
-
 #include "Parser.hpp"
 
 Parser::Parser() :
-        currentToken_(TokenType::NONE, "", 0, 0),
+        currentToken_(TokenType::NONE, "", "", "", 0, 0),
         indentLevel_(0) {
 }
 
@@ -34,15 +32,10 @@ auto Parser::getNextToken() -> Token {
         }
     }
 
-    return Token(TokenType::END_OF_FILE, "", 0, 0);
+    return Token(TokenType::END_OF_FILE, "", "", "", 0, 0);
 }
 
 auto Parser::raiseSyntaxError(const Token& token, const std::string& message) -> void {
-    std::string line = token.input;
-    if (line.length() == 0) {
-        line = lexers_.back().lexer_->getCurrentLine();
-    }
-
     std::string caret = "";
     for (int i = 1; i < token.column; i++) {
         caret += ' ';
@@ -55,7 +48,7 @@ auto Parser::raiseSyntaxError(const Token& token, const std::string& message) ->
 
     std::string errorMessage = message + ": line " + std::to_string(token.line) +
                                 ", column " + std::to_string(token.column) + ", file " + currentFile +
-                                "\n" + caret + "|\n" + caret + "v\n" + line;
+                                "\n" + caret + "|\n" + caret + "v\n" + token.input;
     parseErrors_.push_back(errorMessage);
 }
 
@@ -72,17 +65,7 @@ auto Parser::loadFile(const std::string& filename) -> void {
 
     processedFiles_.insert(canonicalFilename);
 
-    if (!std::filesystem::exists(canonicalFilename)) {
-        throw std::runtime_error("File not found: " + filename);
-    }
-
-    std::ifstream file(canonicalFilename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open file: " + filename);
-    }
-
-    std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    lexers_.push_back({std::make_unique<Lexer>(content), filename});
+    lexers_.push_back({std::make_unique<Lexer>(filename), filename});
 }
 
 auto Parser::parseInclude() -> void {
@@ -148,9 +131,6 @@ auto Parser::parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode> {
 
 auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
     auto storyNode = std::make_unique<ASTNode>(storyToken);
-    auto storyToken2 = storyToken;
-    storyToken2.filename = lexers_.back().filename_;
-    storyToken2.input = lexers_.back().lexer_->getCurrentLine();
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::TEXT) {
@@ -218,11 +198,11 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
             }
 
             if (seenTokenType == TokenType::I) {
-                raiseSyntaxError(storyToken2, "No 'So' in the 'Story' block");
+                raiseSyntaxError(storyToken, "No 'So' in the 'Story' block");
             }
 
             if (seenTokenType == TokenType::AS) {
-                raiseSyntaxError(storyToken2, "No 'I' or 'So' in the 'Story' block");
+                raiseSyntaxError(storyToken, "No 'I' or 'So' in the 'Story' block");
             }
 
             return storyNode;
