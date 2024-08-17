@@ -14,7 +14,6 @@ auto Parser::getNextToken() -> Token {
 
         switch (currentToken_.type) {
         case TokenType::END_OF_FILE:
-            indentLevel_ = lexers_.back().currentIndent_;
             lexers_.pop_back();
             break;
 
@@ -83,7 +82,7 @@ auto Parser::loadFile(const std::string& filename) -> void {
     }
 
     std::string content((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
-    lexers_.push_back({std::make_unique<Lexer>(content), filename, indentLevel_});
+    lexers_.push_back({std::make_unique<Lexer>(content), filename});
     indentLevel_ = 0;
 }
 

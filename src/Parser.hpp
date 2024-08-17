@@ -21,7 +21,6 @@ private:
     struct LexerWithFilename {
         std::unique_ptr<Lexer> lexer_;  // A lexer
         std::string filename_;          // The filename associated with the lexer
-        int currentIndent_;             // The current indentation level when this lexer was invoked
     };
 
     auto getNextToken() -> Token;

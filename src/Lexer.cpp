@@ -78,7 +78,8 @@ auto Lexer::getNextToken() -> Token {
     // Get the next token.
     while (true) {
         if (position_ >= input_.size()) {
-            return Token(TokenType::END_OF_FILE, "", currentLine_, currentColumn_);
+            currentToken_ = Token(TokenType::END_OF_FILE, "", currentLine_, 1);
+            break;
         }
 
         char ch = input_[position_];
