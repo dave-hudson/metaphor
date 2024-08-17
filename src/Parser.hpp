@@ -18,11 +18,6 @@ public:
     auto getSyntaxErrors() -> std::vector<std::string>;
 
 private:
-    struct LexerWithFilename {
-        std::unique_ptr<Lexer> lexer_;  // A lexer
-        std::string filename_;          // The filename associated with the lexer
-    };
-
     auto getNextToken() -> Token;
     auto raiseSyntaxError(const Token& token, const std::string& message) -> void;
     auto loadFile(const std::string& filename) -> void;
@@ -39,7 +34,7 @@ private:
     auto parseThen(const Token& ThenToken) -> std::unique_ptr<ASTNode>;
     auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;
 
-    std::vector<LexerWithFilename> lexers_;
+    std::vector<std::unique_ptr<Lexer>> lexers_;
                                         // A vector of lexers currently being used for different files.
     Token currentToken_;
     std::set<std::filesystem::path> processedFiles_;

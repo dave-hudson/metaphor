@@ -7,8 +7,8 @@ Parser::Parser() :
 
 auto Parser::getNextToken() -> Token {
     while (!lexers_.empty()) {
-        auto& lexerWithFilename = lexers_.back();
-        currentToken_ = lexerWithFilename.lexer_->getNextToken();
+        auto& lexer = lexers_.back();
+        currentToken_ = lexer->getNextToken();
 
         switch (currentToken_.type) {
         case TokenType::END_OF_FILE:
@@ -41,13 +41,8 @@ auto Parser::raiseSyntaxError(const Token& token, const std::string& message) ->
         caret += ' ';
     }
 
-    std::string currentFile = token.filename;
-    if (currentFile.length() == 0) {
-        currentFile = lexers_.empty() ? "Unknown" : lexers_.back().filename_;
-    }
-
     std::string errorMessage = message + ": line " + std::to_string(token.line) +
-                                ", column " + std::to_string(token.column) + ", file " + currentFile +
+                                ", column " + std::to_string(token.column) + ", file " + token.filename +
                                 "\n" + caret + "|\n" + caret + "v\n" + token.input;
     parseErrors_.push_back(errorMessage);
 }
@@ -65,7 +60,7 @@ auto Parser::loadFile(const std::string& filename) -> void {
 
     processedFiles_.insert(canonicalFilename);
 
-    lexers_.push_back({std::make_unique<Lexer>(filename), filename});
+    lexers_.push_back(std::make_unique<Lexer>(filename));
 }
 
 auto Parser::parseInclude() -> void {
