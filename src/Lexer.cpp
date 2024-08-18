@@ -14,7 +14,7 @@ Lexer::Lexer(const std::string& filename) :
         currentLine_(1),
         currentColumn_(1),
         indentColumn_(1),
-        processingIndent_(true),
+        processingIndent_(false),
         indentOffset_(0),
         currentToken_(TokenType::END_OF_FILE, "", "", "", 0, 0) {
     updateEndOfLine();
@@ -56,36 +56,35 @@ auto Lexer::updateEndOfLine() -> void {
     line_ = input_.substr(startOfLine_, endOfLine_ - startOfLine_ + 1);
 }
 
+auto Lexer::processIndentation() -> Token {
+    if (indentOffset_ >= INDENT_SPACES) {
+        indentOffset_ -= INDENT_SPACES;
+        return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+    }
+
+    if (indentOffset_ <= -INDENT_SPACES) {
+        indentOffset_ += INDENT_SPACES;
+        return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
+    }
+
+    if (indentOffset_ > 0) {
+        indentOffset_ = 0;
+        return Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+    }
+
+    indentOffset_ = 0;
+    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
+}
+
 auto Lexer::getNextToken() -> Token {
-    // Are we doing any indentation changes?  If yes then ensure we emit to correct
+    // Are we doing any indentation changes?  If yes then ensure we emit the correct
     // stream of tokens before the last actual token we saw.
-    if (indentOffset_) {
-        if (indentOffset_ > 0) {
-            indentOffset_ -= INDENT_SPACES;
-
-            // Do we have any more INDENT tokens to emit?  If yes then emit one now.
-            if (indentOffset_) {
-                if (indentOffset_ < INDENT_SPACES) {
-                    indentOffset_ = INDENT_SPACES;
-                    return Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
-                }
-
-                return Token(TokenType::INDENT, "[Indent]", filename_, line_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
-            }
-        } else {
-            indentOffset_ += INDENT_SPACES;
-
-            // Do we have any more OUTDENT tokens to emit?  If yes then emit one now.
-            if (indentOffset_) {
-                if (indentOffset_ > -INDENT_SPACES) {
-                    indentOffset_ = -INDENT_SPACES;
-                    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
-                }
-
-                return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
-            }
+    if (processingIndent_) {
+        if (indentOffset_) {
+            return processIndentation();
         }
 
+        processingIndent_ = false;
         return currentToken_;
     }
 
@@ -123,18 +122,13 @@ auto Lexer::getNextToken() -> Token {
 
     // If our new token is preceded by indentation then process that first!
     if (processingIndent_) {
-        processingIndent_ = false;
         indentOffset_ = currentToken_.column - indentColumn_;
         indentColumn_ = currentToken_.column;
         if (indentOffset_) {
-            if (indentOffset_ >= INDENT_SPACES) {
-                return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
-            }
-
-            if (indentOffset_ <= -INDENT_SPACES) {
-                return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
-            }
+            return processIndentation();
         }
+
+        processingIndent_ = false;
     }
 
     return currentToken_;

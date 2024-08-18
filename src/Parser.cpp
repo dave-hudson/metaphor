@@ -11,21 +11,23 @@ auto Parser::getNextToken() -> Token {
         currentToken_ = lexer->getNextToken();
 
         switch (currentToken_.type) {
-        case TokenType::END_OF_FILE:
-            lexers_.pop_back();
-            break;
+        case TokenType::INDENT:
+        case TokenType::BAD_INDENT:
+            indentLevel_++;
+            return currentToken_;
+
+        case TokenType::OUTDENT:
+        case TokenType::BAD_OUTDENT:
+            indentLevel_--;
+            return currentToken_;
 
         case TokenType::INCLUDE:
             parseInclude();
             break;
 
-        case TokenType::INDENT:
-            indentLevel_++;
-            return currentToken_;
-
-        case TokenType::OUTDENT:
-            indentLevel_--;
-            return currentToken_;
+        case TokenType::END_OF_FILE:
+            lexers_.pop_back();
+            break;
 
         default:
             return currentToken_;
@@ -45,6 +47,7 @@ auto Parser::raiseSyntaxError(const Token& token, const std::string& message) ->
                                 ", column " + std::to_string(token.column) + ", file " + token.filename +
                                 "\n" + caret + "|\n" + caret + "v\n" + token.input;
     parseErrors_.push_back(errorMessage);
+std::cerr << errorMessage;
 }
 
 auto Parser::getSyntaxErrors() -> std::vector<std::string> {
@@ -156,7 +159,7 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
                 raiseSyntaxError(token, "Can only have one 'As' in a 'Story' block");
             }
 
-            storyNode->addChild(parseGiven(token));
+            storyNode->addChild(parseAs(token));
             seenTokenType = TokenType::AS;
             break;
 
@@ -169,7 +172,7 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
                 raiseSyntaxError(token, "Can only have one 'I' in a 'Story' block");
             }
 
-            storyNode->addChild(parseWhen(token));
+            storyNode->addChild(parseI(token));
             seenTokenType = TokenType::I;
             break;
 
@@ -182,7 +185,7 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
                 raiseSyntaxError(token, "Can only have one 'So' in a 'Story' block");
             }
 
-            storyNode->addChild(parseThen(token));
+            storyNode->addChild(parseSo(token));
             seenTokenType = TokenType::THEN;
             break;
 

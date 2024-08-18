@@ -14,6 +14,7 @@ public:
 
 private:
     auto updateEndOfLine() -> void;
+    auto processIndentation() -> Token;
     auto readKeywordOrText() -> Token;
     auto consumeNewline() -> void;
     auto consumeWhitespace() -> void;
