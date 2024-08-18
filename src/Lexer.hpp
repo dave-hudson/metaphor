@@ -15,9 +15,9 @@ public:
 private:
     auto updateEndOfLine() -> void;
     auto processIndentation() -> Token;
-    auto readKeywordOrText() -> Token;
     auto consumeNewline() -> void;
     auto consumeWhitespace() -> void;
+    auto readKeywordOrText() -> Token;
 
     std::string filename_;              // File we're lexing
     std::string input_;                 // Content being lexed
@@ -27,10 +27,10 @@ private:
     size_t endOfLine_;                  // Offset of the last character of the current line being lexed
     int currentLine_;                   // Current line number being processed (starting at 1)
     int currentColumn_;                 // Current column number being processed (starting at 1)
-    int indentColumn_;
+    int indentColumn_;                  // Column number for indentation processing
     bool processingIndent_;             // Are we processing indentation at the start of a line?
-    int indentOffset_;
-    Token currentToken_;
+    int indentOffset_;                  // If we're handling indentation changes, how far do we need to move?
+    Token currentToken_;                // Current token we're processing
 
     const std::map<std::string, TokenType> keyword_map = {
         {"Include:", TokenType::INCLUDE},

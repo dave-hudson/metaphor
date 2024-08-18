@@ -57,13 +57,15 @@ auto Lexer::updateEndOfLine() -> void {
 }
 
 auto Lexer::processIndentation() -> Token {
-    if (indentOffset_ >= INDENT_SPACES) {
-        indentOffset_ -= INDENT_SPACES;
-        return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
-    }
+    if ((indentOffset_ % INDENT_SPACES) == 0) {
+        if (indentOffset_ >= INDENT_SPACES) {
+            indentOffset_ -= INDENT_SPACES;
+            indentColumn_ += INDENT_SPACES;
+            return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+        }
 
-    if (indentOffset_ <= -INDENT_SPACES) {
         indentOffset_ += INDENT_SPACES;
+        indentColumn_ -= INDENT_SPACES;
         return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
     }
 
@@ -74,6 +76,43 @@ auto Lexer::processIndentation() -> Token {
 
     indentOffset_ = 0;
     return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
+}
+
+
+auto Lexer::consumeNewline() -> void {
+    position_++;
+    currentLine_++;
+    currentColumn_ = 1;
+}
+
+auto Lexer::consumeWhitespace() -> void {
+    while (position_ < input_.size() && isspace(input_[position_]) && input_[position_] != '\n') {
+        position_++;
+        currentColumn_++;
+    }
+}
+
+auto Lexer::readKeywordOrText() -> Token {
+    int startColumn = currentColumn_;
+    size_t startPosition = position_;
+
+    while (position_ < input_.size() && !isspace(input_[position_]) && input_[position_] != '\n') {
+        position_++;
+        currentColumn_++;
+    }
+
+    std::string word = input_.substr(startPosition, position_ - startPosition);
+
+    if (keyword_map.find(word) != keyword_map.end()) {
+        return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
+    }
+
+    while (position_ < input_.size() && input_[position_] != '\n' && input_[position_] != '#') {
+        position_++;
+        currentColumn_++;
+    }
+
+    return Token(TokenType::TEXT, input_.substr(startPosition, position_ - startPosition), line_, filename_, currentLine_, startColumn);
 }
 
 auto Lexer::getNextToken() -> Token {
@@ -123,7 +162,6 @@ auto Lexer::getNextToken() -> Token {
     // If our new token is preceded by indentation then process that first!
     if (processingIndent_) {
         indentOffset_ = currentToken_.column - indentColumn_;
-        indentColumn_ = currentToken_.column;
         if (indentOffset_) {
             return processIndentation();
         }
@@ -132,40 +170,4 @@ auto Lexer::getNextToken() -> Token {
     }
 
     return currentToken_;
-}
-
-auto Lexer::readKeywordOrText() -> Token {
-    int startColumn = currentColumn_;
-    size_t startPosition = position_;
-
-    while (position_ < input_.size() && !isspace(input_[position_]) && input_[position_] != '\n') {
-        position_++;
-        currentColumn_++;
-    }
-
-    std::string word = input_.substr(startPosition, position_ - startPosition);
-
-    if (keyword_map.find(word) != keyword_map.end()) {
-        return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
-    }
-
-    while (position_ < input_.size() && input_[position_] != '\n' && input_[position_] != '#') {
-        position_++;
-        currentColumn_++;
-    }
-
-    return Token(TokenType::TEXT, input_.substr(startPosition, position_ - startPosition), line_, filename_, currentLine_, startColumn);
-}
-
-auto Lexer::consumeNewline() -> void {
-    position_++;
-    currentLine_++;
-    currentColumn_ = 1;
-}
-
-auto Lexer::consumeWhitespace() -> void {
-    while (position_ < input_.size() && isspace(input_[position_]) && input_[position_] != '\n') {
-        position_++;
-        currentColumn_++;
-    }
 }

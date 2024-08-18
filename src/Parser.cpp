@@ -12,12 +12,10 @@ auto Parser::getNextToken() -> Token {
 
         switch (currentToken_.type) {
         case TokenType::INDENT:
-        case TokenType::BAD_INDENT:
             indentLevel_++;
             return currentToken_;
 
         case TokenType::OUTDENT:
-        case TokenType::BAD_OUTDENT:
             indentLevel_--;
             return currentToken_;
 
@@ -47,7 +45,6 @@ auto Parser::raiseSyntaxError(const Token& token, const std::string& message) ->
                                 ", column " + std::to_string(token.column) + ", file " + token.filename +
                                 "\n" + caret + "|\n" + caret + "v\n" + token.input;
     parseErrors_.push_back(errorMessage);
-std::cerr << errorMessage;
 }
 
 auto Parser::getSyntaxErrors() -> std::vector<std::string> {
