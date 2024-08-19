@@ -31,7 +31,6 @@ int main(int argc, char* argv[]) {
 
     std::string filePath = argv[1];
 
-    std::cout << "Processing file: " << filePath << std::endl;
     Parser parser;
     auto res = parser.parse(filePath);
 
