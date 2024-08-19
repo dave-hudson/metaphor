@@ -42,6 +42,11 @@ $(OBJ_DIR):
 $(APP): $(OBJ_DIR) $(METAPHORC_OBJS)
 	$(CC) $(LDFLAGS) -o $@ $(METAPHORC_OBJS)
 
+.PHONY: test
+
+test: all
+	python3 src/testrun/testrun.py test/test.json
+
 .PHONY: clean
 
 clean:

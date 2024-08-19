@@ -39,7 +39,7 @@ Goal:
     Require: When the tool encounters a sitemap index it should emit a console message: "Processing sitemap index".  It should then process each sitemap within the sitemap index.
     Require: For each sitemap found in a sitemap index, emit a console message: "Processing sitemap: <name>" where <name> is the name of the sitemap file, and then process the sitemap file.
 
-  Include: include2.m6r
+  Include: test/include-1/include.m6r
 
   Require:
     Rendering
