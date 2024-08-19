@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <stdexcept>
 #include <filesystem>
@@ -14,17 +15,17 @@ void printUsage(const char* programName) {
         << std::endl;
 }
 
-void recurse(const ASTNode& node, int level, std::string section) {
-    std::cout << std::string(level * 2, ' ') << section << std::endl;
+void recurse(const ASTNode& node, int level, std::string section, std::ostream& out) {
+    out << std::string(level * 2, ' ') << section << std::endl;
     int index = 0;
     for (const auto& child : node.childNodes_) {
         if (child->tokenType_ == TokenType::TEXT) {
-            std::cout << std::string((level + 1) * 2, ' ') << child->value_ << std::endl;
+            out << std::string((level + 1) * 2, ' ') << child->value_ << std::endl;
         }
 
         if (child->tokenType_ == TokenType::REQUIRE) {
             index++;
-            recurse(*child, level + 1, section + "." + std::to_string(index));
+            recurse(*child, level + 1, section + "." + std::to_string(index), out);
         }
     }
 }
@@ -81,8 +82,17 @@ int main(int argc, char* argv[]) {
         std::cerr << "Debug mode is ON\n";
     }
 
+    std::ostream* outStream = &std::cout;
+    std::ofstream outFile;
+
     if (!outputFile.empty()) {
-        std::cerr << "Output file: " << outputFile << std::endl;
+        outFile.open(outputFile);
+        if (!outFile) {
+            std::cerr << "Error: Could not open output file " << outputFile << " for writing.\n";
+            return 1;
+        }
+
+        outStream = &outFile;
     }
 
     Parser parser;
@@ -99,7 +109,7 @@ int main(int argc, char* argv[]) {
     }
 
     auto syntaxTree = parser.getSyntaxTree();
-    recurse(*syntaxTree, 0, "1");
+    recurse(*syntaxTree, 0, "1", *outStream);
 
     return 0;
 }
