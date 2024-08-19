@@ -2,5 +2,8 @@
 *~
 *.swp
 
+# Ignore VSCode
+.vscode
+
 # Ignore output files
 build/*
