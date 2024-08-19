@@ -2,11 +2,16 @@
 #include <string>
 #include <stdexcept>
 #include <filesystem>
-#include "Parser.hpp"  // Assuming the Parser class is in Parser.hpp
+#include <getopt.h>
+#include "Parser.hpp"
 
 void printUsage(const char* programName) {
-    std::cerr << "Usage: " << programName << " <file>\n"
-        << "metaphorc: Metaphor compiler" << std::endl;
+    std::cerr << "Usage: " << programName << " [options] <file>\n"
+        << "Options:\n"
+        << "  -h, --help                Print this help message\n"
+        << "  -o, --outputFile <file>   Specify output file\n"
+        << "  -d, --debug               Generate debug output\n"
+        << std::endl;
 }
 
 void recurse(const ASTNode& node, int level, std::string section) {
@@ -25,11 +30,60 @@ void recurse(const ASTNode& node, int level, std::string section) {
 }
 
 int main(int argc, char* argv[]) {
-    if (argc != 2) {
+    std::string outputFile;
+    bool debug = false;
+
+    const char* const short_opts = "ho:d";
+    const option long_opts[] = {
+        {"help", no_argument, nullptr, 'h'},
+        {"outputFile", required_argument, nullptr, 'o'},
+        {"debug", no_argument, nullptr, 'd'},
+        {nullptr, no_argument, nullptr, 0}
+    };
+
+    while (true) {
+        const auto opt = getopt_long(argc, argv, short_opts, long_opts, nullptr);
+
+        if (opt == -1) break;
+
+        switch (opt) {
+        case 'h':
+            printUsage(argv[0]);
+            return 0;
+
+        case 'o':
+            outputFile = optarg;
+            break;
+
+        case 'd':
+            debug = true;
+            break;
+
+        case '?':
+            printUsage(argv[0]);
+            return 1;
+
+        default:
+            printUsage(argv[0]);
+            return 1;
+        }
+    }
+
+    if (optind >= argc) {
+        std::cerr << "Error: No input file specified.\n";
+        printUsage(argv[0]);
         return 1;
     }
 
-    std::string filePath = argv[1];
+    std::string filePath = argv[optind];
+
+    if (debug) {
+        std::cerr << "Debug mode is ON\n";
+    }
+
+    if (!outputFile.empty()) {
+        std::cerr << "Output file: " << outputFile << std::endl;
+    }
 
     Parser parser;
     auto res = parser.parse(filePath);
@@ -49,4 +103,3 @@ int main(int argc, char* argv[]) {
 
     return 0;
 }
-
