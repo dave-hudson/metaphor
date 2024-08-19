@@ -12,6 +12,18 @@
         "type": "positive"
     },
     {
+        "command": "build/metaphorc test/missing-as-1/test.m6r",
+        "type": "negative"
+    },
+    {
+        "command": "build/metaphorc test/missing-i-1/test.m6r",
+        "type": "negative"
+    },
+    {
+        "command": "build/metaphorc test/missing-so-1/test.m6r",
+        "type": "negative"
+    },
+    {
         "command": "build/metaphorc test/positive-1/test.m6r",
         "type": "positive"
     }
