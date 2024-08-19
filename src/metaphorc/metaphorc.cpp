@@ -9,6 +9,21 @@ void printUsage(const char* programName) {
         << "metaphorc: Metaphor compiler" << std::endl;
 }
 
+void recurse(const ASTNode& node, int level, std::string section) {
+    std::cout << std::string(level * 2, ' ') << section << std::endl;
+    int index = 0;
+    for (const auto& child : node.childNodes_) {
+        if (child->tokenType_ == TokenType::TEXT) {
+            std::cout << std::string((level + 1) * 2, ' ') << child->value_ << std::endl;
+        }
+
+        if (child->tokenType_ == TokenType::REQUIRE) {
+            index++;
+            recurse(*child, level + 1, section + "." + std::to_string(index));
+        }
+    }
+}
+
 int main(int argc, char* argv[]) {
     if (argc != 2) {
         return 1;
@@ -29,6 +44,9 @@ int main(int argc, char* argv[]) {
         std::cerr << "----------------\n";
         return -1;
     }
+
+    auto syntaxTree = parser.getSyntaxTree();
+    recurse(*syntaxTree, 0, "1");
 
     return 0;
 }

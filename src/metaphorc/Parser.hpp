@@ -15,6 +15,7 @@ class Parser {
 public:
     Parser();
     auto parse(const std::string& initial_file) -> bool;
+    auto getSyntaxTree() -> std::unique_ptr<ASTNode>;
     auto getSyntaxErrors() -> std::vector<std::string>;
 
 private:

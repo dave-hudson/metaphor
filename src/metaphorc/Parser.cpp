@@ -563,6 +563,10 @@ auto Parser::parseThen(const Token& thenToken) -> std::unique_ptr<ASTNode> {
     }
 }
 
+auto Parser::getSyntaxTree() -> std::unique_ptr<ASTNode> {
+    return std::move(syntaxTree_);
+}
+
 auto Parser::parse(const std::string& initial_file) -> bool {
     loadFile(initial_file);
 
@@ -582,6 +586,5 @@ auto Parser::parse(const std::string& initial_file) -> bool {
         return false;
     }
 
-    syntaxTree_->printTree();
     return true;
 }
