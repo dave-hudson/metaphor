@@ -1,10 +1,18 @@
 [
     {
-        "command": "build/metaphorc test/positive-1/test.m6r",
-        "type": "positive"
+        "command": "build/metaphorc test/bad-indent-1/test.m6r",
+        "type": "negative"
+    },
+    {
+        "command": "build/metaphorc test/bad-indent-2/test.m6r",
+        "type": "negative"
     },
     {
         "command": "build/metaphorc test/include-1/test.m6r",
+        "type": "positive"
+    },
+    {
+        "command": "build/metaphorc test/positive-1/test.m6r",
         "type": "positive"
     }
 ]
