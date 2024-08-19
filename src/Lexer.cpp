@@ -16,6 +16,7 @@ Lexer::Lexer(const std::string& filename) :
         indentColumn_(1),
         processingIndent_(false),
         indentOffset_(0),
+        inTextBlock_(false),
         currentToken_(TokenType::END_OF_FILE, "", "", "", 0, 0) {
     updateEndOfLine();
 
@@ -103,16 +104,25 @@ auto Lexer::readKeywordOrText() -> Token {
 
     std::string word = input_.substr(startPosition, position_ - startPosition);
 
+    // If we have a keyword then return that.
     if (keyword_map.find(word) != keyword_map.end()) {
+        // Once we've seen a keyword, we're no longer in a text block.
+        inTextBlock_ = false;
         return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
     }
 
-    while (position_ < input_.size() && input_[position_] != '\n' && input_[position_] != '#') {
-        position_++;
-        currentColumn_++;
+    // We're dealing with text.  If we're already in a text block then we want to use the same indentation
+    // level for all rows of text unless we see outdenting (in which case we've got bad text, but we'll
+    // leave that to the parser).
+    if (inTextBlock_) {
+        if (startColumn > indentColumn_) {
+            startColumn = indentColumn_;
+        }
     }
 
-    return Token(TokenType::TEXT, input_.substr(startPosition, position_ - startPosition), line_, filename_, currentLine_, startColumn);
+    inTextBlock_ = true;
+    position_ = endOfLine_;
+    return Token(TokenType::TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn);
 }
 
 auto Lexer::getNextToken() -> Token {

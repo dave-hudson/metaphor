@@ -10,7 +10,9 @@ Require:
     Example:
       Given: The tool is scanning URLs for the website https://davehudson.io
       When: The tool has found a URL https://davehudson.io/blog/post
-      Then: The output file should be saved <output-directory>/blog/post/index.html where <output-directory> is the path specified as the output directory.
+      Then:
+        The output file should be saved <output-directory>/blog/post/index.html,
+        where <output-directory> is the path specified as the output directory.
 
   Require: If the output directory or any subdirectories do not exist then they should be created.  If creating the directories fails then emit a failure message to the console and exit with an error status.
   Require: Before attempting any to invoke puppeteer for a given URL, any previous output file that matches what will be the new output file must be deleted.

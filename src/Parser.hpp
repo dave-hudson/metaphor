@@ -22,6 +22,7 @@ private:
     auto raiseSyntaxError(const Token& token, const std::string& message) -> void;
     auto loadFile(const std::string& filename) -> void;
     auto parseInclude() -> void;
+    auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;
     auto parseGoal(const Token& defineToken) -> std::unique_ptr<ASTNode>;
     auto parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode>;
     auto parseAs(const Token& asToken) -> std::unique_ptr<ASTNode>;
@@ -32,7 +33,6 @@ private:
     auto parseGiven(const Token& givenToken) -> std::unique_ptr<ASTNode>;
     auto parseWhen(const Token& WhenToken) -> std::unique_ptr<ASTNode>;
     auto parseThen(const Token& ThenToken) -> std::unique_ptr<ASTNode>;
-    auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;
 
     std::vector<std::unique_ptr<Lexer>> lexers_;
                                         // A vector of lexers currently being used for different files.
