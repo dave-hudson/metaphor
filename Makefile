@@ -23,7 +23,8 @@ include src/Makefile.mk
 #
 METAPHORC_OBJS := $(patsubst src/%.cpp,build/obj/%.o,$(METAPHORC_SRCS))
 
-OBJ_DIR := build/obj
+BUILD_DIR := build
+OBJ_DIR := $(BUILD_DIR)/obj
 
 $(OBJ_DIR)/%.o : src/%.cpp
 	$(CC) $(CFLAGS) -MD -c $< -o $@
@@ -33,7 +34,7 @@ $(OBJ_DIR)/%.o : src/%.cpp
 all: $(APP)
 
 $(OBJ_DIR):
-	mkdir -p $(OBJ_DIR)
+	mkdir -p $(OBJ_DIR) $(OBJ_DIR)/metaphorc
 
 # Include dependency files
 -include $(METAPHORC_OBJS:.o=.d)
@@ -49,4 +50,5 @@ clean:
 .PHONY: realclean
 
 realclean: clean
-	$(RM) -f *~ src/*.o src/*~ $(BUILD_DIR)
+	$(RM) -f *~ src/*~
+	$(RM) -fr $(BUILD_DIR)
