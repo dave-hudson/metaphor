@@ -1,5 +1,13 @@
 [
     {
+        "command": "build/metaphorc test/bad-include-1/test.m6r",
+        "type": "negative"
+    },
+    {
+        "command": "build/metaphorc test/bad-include-2/test.m6r",
+        "type": "negative"
+    },
+    {
         "command": "build/metaphorc test/bad-indent-1/test.m6r",
         "type": "negative"
     },

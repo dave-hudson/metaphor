@@ -1,0 +1,22 @@
+Require:
+  File management
+
+  Require: Rendered pages should be saved in a specified output directory.
+  Require: The output directory is defined by the non-optional --output command line parameter.
+  Require: For each page, the directory structure should match the URL path, but should not include the hostname or any port number.
+  Require:
+    If the page does not have an explicit ".html" or ".htm" name then assume it is a directory and create a file "index.html" as the file name within that output directory.
+
+    Example:
+      Given: The tool is scanning URLs for the website https://davehudson.io
+      When: The tool has found a URL https://davehudson.io/blog/post
+      Then:
+        The output file should be saved <output-directory>/blog/post/index.html,
+        where <output-directory> is the path specified as the output directory.
+
+  Include: test/bad-include-2/test.m6r
+
+Require: If the output directory or any subdirectories do not exist then they should be created.  If creating the directories fails then emit a failure message to the console and exit with an error status.
+  Require: Before attempting any to invoke puppeteer for a given URL, any previous output file that matches what will be the new output file must be deleted.
+  Require: The tool must not delete any file or directory that will not be written as an output file.
+  Require: If any file or directory operations fail then log a message to the console and exit with an error status.
