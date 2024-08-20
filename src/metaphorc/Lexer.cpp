@@ -4,7 +4,7 @@
 
 #include "Lexer.hpp"
 
-#define INDENT_SPACES 2
+#define INDENT_SPACES 4
 
 Lexer::Lexer(const std::string& filename) :
         filename_(filename),

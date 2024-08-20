@@ -1,114 +1,114 @@
 Goal:
-  I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
+    I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
-  Story:
-    As: A website developer
-    I: Want to pre-render all the pages of my website
-    So: I can allow the website to be crawled by spiders that cannot render JavaScript.
+    Story:
+        As: A website developer
+        I: Want to pre-render all the pages of my website
+        So: I can allow the website to be crawled by spiders that cannot render JavaScript.
 
-  Require:
-    Environment and dependency setup
-
-    Require: The tool must be compatible with Node.js version 14.x or later and headless Google Chrome (current version).
-    Require: Use the latest available stable version of puppeteer for rendering.
-    Require: Use the latest available stable version of yargs for command line options.
-    Require: Use the latest available stable version of yargs for command line options.
-    Require: Use the latest available stable version of axios to handle the HTTP requests.
-    Require: Use the latest available stable version of fast-xml-parser to handle the XML parsing.
-    Require: Any package dependencies that you might need must be explicitly stated in these requirements.  If you need to use a dependency that is not listed here then ask for approval or use a different approach.
-
-  Require:
-    Tool invocation
-
-    Require: The tool should be invoked as a script with Node.js using ES6 modules.
-    Require: Ensure that the tool can be run from the command line with appropriate parameters.
-    Require: The tool does not need a configuration file.
-
-  Require:
-    Sitemap handling
-
-    Require: The tool will scan a sitemap.xml file that will provide a list of URLs to be pre-rendered.
-    Require: The sitemap will be defined by either a file or a URL.  Either option can be provided but not both, and one option must be provided by the user.
-    Require: If the sitemap is being defined by a file then the --sitemap-file paramater will define where to find the sitemap file.
-    Require: If the sitemap is being defined by a URL then the --sitemap-url parameter will define the URL where to find the sitemap file.
-    Require: If the response from the web server to fetching the sitemap via a URL is redirect status code then log the new URL and load from that URL instead.
-    Require: Include an option to replace the protocol and hostname in the URLs using the --replace-url parameter.  The --replace-url parameter should take the form "<new-url-prefix>=<old-url-prefix>".
-    Require: Only one --relace-url parameter can be provided and it only supports a single old and new host pair.
-    Require: The tool must check that the form of any --replace-url parameter correctly matches the form expected, noting that the hostname prefix may include a port number.
-    Require: The logic should handle either a sitemap or a sitemap index.
-    Require: When the tool encounters a sitemap index it should emit a console message: "Processing sitemap index".  It should then process each sitemap within the sitemap index.
-    Require: For each sitemap found in a sitemap index, emit a console message: "Processing sitemap: <name>" where <name> is the name of the sitemap file, and then process the sitemap file.
-
-  Require:
-    File management
-
-    Require: Rendered pages should be saved in a specified output directory.
-    Require: The output directory is defined by the non-optional --output command line parameter.
-    Require: For each page, the directory structure should match the URL path, but should not include the hostname or any port number.
     Require:
-      If the page does not have an explicit ".html" or ".htm" name then assume it is a directory and create a file "index.html" as the file name within that output directory.
+        Environment and dependency setup
 
-      Example:
-        Given: The tool is scanning URLs for the website https://davehudson.io
-        When: The tool has found a URL https://davehudson.io/blog/post
-        Then: The output file should be saved <output-directory>/blog/post/index.html where <output-directory> is the path specified as the output directory.
+        Require: The tool must be compatible with Node.js version 14.x or later and headless Google Chrome (current version).
+        Require: Use the latest available stable version of puppeteer for rendering.
+        Require: Use the latest available stable version of yargs for command line options.
+        Require: Use the latest available stable version of yargs for command line options.
+        Require: Use the latest available stable version of axios to handle the HTTP requests.
+        Require: Use the latest available stable version of fast-xml-parser to handle the XML parsing.
+        Require: Any package dependencies that you might need must be explicitly stated in these requirements.  If you need to use a dependency that is not listed here then ask for approval or use a different approach.
 
-    Require: If the output directory or any subdirectories do not exist then they should be created.  If creating the directories fails then emit a failure message to the console and exit with an error status.
-    Require: Before attempting any to invoke puppeteer for a given URL, any previous output file that matches what will be the new output file must be deleted.
-    Require: The tool must not delete any file or directory that will not be written as an output file.
-    Require: If any file or directory operations fail then log a message to the console and exit with an error status.
-
-  Require:
-    Rendering
-
-    Require: Once the directory structure is in place and all old index.html files have been deleted, render all the pages.
-    Require: The tool should parallelize rendering operations.
-    Require: The default number of parallel tasks should default to the number of available CPU cores.
-    Require: Include an optional parameter --parallel-renders to specify a different number of parallel tasks.
-    Require: As soon as a render completes then the next available render should be started.
-    Require: For performance reasons, only start puppeteer once.
-    Require: The tool should handle network errors, timeouts, and rendering errors.
-    Require: If an error occurs, even if it's handled, log a message indicating the URL that had the error along with a message indicating why the error occurred.
-    Require: In the event of any errors, ensure that all puppeteer resources are released correctly.
-
-  Require:
-    Retry Mechanism
-
-    Require: Implement a retry mechanism for failed render attempts with a default of 3 retries.
-    Require: The retry mechanism should be applied to invocations of puppeteer as well as for network failures.
-    Require: Allow this to be configurable with the --max-retries parameter.
-    Require: If a failure occurs, wait one second before attempting the retry.
-    Require: The tool should exit with an error status if any page fails to render after retries.
-
-  Require:
-    Successful completion
-
-    Require: If all pages render successfully, exit with a success status.
-
-  Require:
-    Logging
-
-    Require: Emit console messages for progress and errors.
-    Require: The tool does not need to log to a file.
     Require:
-      Output messages:
+        Tool invocation
 
-      Require: “Rendered: <url>”, where <url> is the URL has been rendered.
-      Require: “Failed: <url>: <reason>”, where <url> is the URL being processed, and <reason> is the failure reason.
+        Require: The tool should be invoked as a script with Node.js using ES6 modules.
+        Require: Ensure that the tool can be run from the command line with appropriate parameters.
+        Require: The tool does not need a configuration file.
 
-    Require: There should be no other console messages.
+    Require:
+        Sitemap handling
 
-  Require:
-    Usage Information
+        Require: The tool will scan a sitemap.xml file that will provide a list of URLs to be pre-rendered.
+        Require: The sitemap will be defined by either a file or a URL.  Either option can be provided but not both, and one option must be provided by the user.
+        Require: If the sitemap is being defined by a file then the --sitemap-file paramater will define where to find the sitemap file.
+        Require: If the sitemap is being defined by a URL then the --sitemap-url parameter will define the URL where to find the sitemap file.
+        Require: If the response from the web server to fetching the sitemap via a URL is redirect status code then log the new URL and load from that URL instead.
+        Require: Include an option to replace the protocol and hostname in the URLs using the --replace-url parameter.  The --replace-url parameter should take the form "<new-url-prefix>=<old-url-prefix>".
+        Require: Only one --relace-url parameter can be provided and it only supports a single old and new host pair.
+        Require: The tool must check that the form of any --replace-url parameter correctly matches the form expected, noting that the hostname prefix may include a port number.
+        Require: The logic should handle either a sitemap or a sitemap index.
+        Require: When the tool encounters a sitemap index it should emit a console message: "Processing sitemap index".  It should then process each sitemap within the sitemap index.
+        Require: For each sitemap found in a sitemap index, emit a console message: "Processing sitemap: <name>" where <name> is the name of the sitemap file, and then process the sitemap file.
 
-    Require: If invoked with invalid parameters, display correct usage information.
-    Require: Include a -h parameter to display a help message with all valid parameters and their usage.
+    Require:
+        File management
 
-  Require:
-    Code quality
+        Require: Rendered pages should be saved in a specified output directory.
+        Require: The output directory is defined by the non-optional --output command line parameter.
+        Require: For each page, the directory structure should match the URL path, but should not include the hostname or any port number.
+        Require:
+            If the page does not have an explicit ".html" or ".htm" name then assume it is a directory and create a file "index.html" as the file name within that output directory.
 
-    Require: Use JSDoc annotations for all functions.
-    Require: Use 4 spaces for indentation in the source code.
-    Require: Where any functions may throw errors, include try/catch blocks to handle those error conditions.
-    Require: For code style, do not use an "else" if the previous block in an if statement ends with a "return" statement.
+            Example:
+                Given: The tool is scanning URLs for the website https://davehudson.io
+                When: The tool has found a URL https://davehudson.io/blog/post
+                Then: The output file should be saved <output-directory>/blog/post/index.html where <output-directory> is the path specified as the output directory.
+
+        Require: If the output directory or any subdirectories do not exist then they should be created.  If creating the directories fails then emit a failure message to the console and exit with an error status.
+        Require: Before attempting any to invoke puppeteer for a given URL, any previous output file that matches what will be the new output file must be deleted.
+        Require: The tool must not delete any file or directory that will not be written as an output file.
+        Require: If any file or directory operations fail then log a message to the console and exit with an error status.
+
+    Require:
+        Rendering
+
+        Require: Once the directory structure is in place and all old index.html files have been deleted, render all the pages.
+        Require: The tool should parallelize rendering operations.
+        Require: The default number of parallel tasks should default to the number of available CPU cores.
+        Require: Include an optional parameter --parallel-renders to specify a different number of parallel tasks.
+        Require: As soon as a render completes then the next available render should be started.
+        Require: For performance reasons, only start puppeteer once.
+        Require: The tool should handle network errors, timeouts, and rendering errors.
+        Require: If an error occurs, even if it's handled, log a message indicating the URL that had the error along with a message indicating why the error occurred.
+        Require: In the event of any errors, ensure that all puppeteer resources are released correctly.
+
+    Require:
+        Retry Mechanism
+
+        Require: Implement a retry mechanism for failed render attempts with a default of 3 retries.
+        Require: The retry mechanism should be applied to invocations of puppeteer as well as for network failures.
+        Require: Allow this to be configurable with the --max-retries parameter.
+        Require: If a failure occurs, wait one second before attempting the retry.
+        Require: The tool should exit with an error status if any page fails to render after retries.
+
+    Require:
+        Successful completion
+
+        Require: If all pages render successfully, exit with a success status.
+
+    Require:
+        Logging
+
+        Require: Emit console messages for progress and errors.
+        Require: The tool does not need to log to a file.
+        Require:
+            Output messages:
+
+            Require: “Rendered: <url>”, where <url> is the URL has been rendered.
+            Require: “Failed: <url>: <reason>”, where <url> is the URL being processed, and <reason> is the failure reason.
+
+        Require: There should be no other console messages.
+
+    Require:
+        Usage Information
+
+        Require: If invoked with invalid parameters, display correct usage information.
+        Require: Include a -h parameter to display a help message with all valid parameters and their usage.
+
+    Require:
+        Code quality
+
+        Require: Use JSDoc annotations for all functions.
+        Require: Use 4 spaces for indentation in the source code.
+        Require: Where any functions may throw errors, include try/catch blocks to handle those error conditions.
+        Require: For code style, do not use an "else" if the previous block in an if statement ends with a "return" statement.
 
