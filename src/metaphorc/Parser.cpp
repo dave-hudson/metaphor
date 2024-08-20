@@ -190,6 +190,10 @@ auto Parser::parseStory(const Token& storyToken) -> std::unique_ptr<ASTNode> {
             seenTokenType = TokenType::THEN;
             break;
 
+        case TokenType::REQUIRE:
+            storyNode->addChild(parseRequire(token));
+            break;
+
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
             if (indentLevel_ >= blockIndentLevel) {

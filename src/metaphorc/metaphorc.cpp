@@ -16,17 +16,54 @@ void printUsage(const char* programName) {
 }
 
 void recurse(const ASTNode& node, int level, std::string section, std::ostream& out) {
-    out << std::string(level * 2, ' ') << section << std::endl;
+    switch (node.tokenType_) {
+    case TokenType::TEXT:
+        out << std::string(level * 2, ' ') << node.value_ << std::endl;
+        return;
+
+    case TokenType::REQUIRE:
+    case TokenType::EXAMPLE:
+    case TokenType::STORY:
+        out << std::string(level * 2, ' ') << section << std::endl;
+        break;
+
+    case TokenType::AS:
+        out << std::string(level * 2, ' ') << "As" << std::endl;
+        break;
+
+    case TokenType::I:
+        out << std::string(level * 2, ' ') << "I" << std::endl;
+        break;
+
+    case TokenType::SO:
+        out << std::string(level * 2, ' ') << "so" << std::endl;
+        break;
+
+    case TokenType::GIVEN:
+        out << std::string(level * 2, ' ') << "Given" << std::endl;
+        break;
+
+    case TokenType::WHEN:
+        out << std::string(level * 2, ' ') << "when" << std::endl;
+        break;
+
+    case TokenType::THEN:
+        out << std::string(level * 2, ' ') << "then" << std::endl;
+        break;
+
+    default:
+        break;
+    }
+
     int index = 0;
     for (const auto& child : node.childNodes_) {
-        if (child->tokenType_ == TokenType::TEXT) {
-            out << std::string((level + 1) * 2, ' ') << child->value_ << std::endl;
+        if (child->tokenType_ == TokenType::REQUIRE ||
+                child->tokenType_ == TokenType::EXAMPLE ||
+                child->tokenType_ == TokenType::STORY) {
+            index++;
         }
 
-        if (child->tokenType_ == TokenType::REQUIRE) {
-            index++;
-            recurse(*child, level + 1, section + "." + std::to_string(index), out);
-        }
+        recurse(*child, level + 1, section + "." + std::to_string(index), out);
     }
 }
 
