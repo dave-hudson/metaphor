@@ -160,7 +160,7 @@ auto Lexer::getNextToken() -> Token {
             // line.  Then pretend we saw characters so next time we process the end of line.
             if (!seenNonWhitespaceCharacters_ && inTextBlock_) {
                 seenNonWhitespaceCharacters_ = true;
-                currentToken_ = Token(TokenType::TEXT, "", line_, filename_, currentLine_ - 1, indentColumn_);
+                currentToken_ = Token(TokenType::TEXT, "", line_, filename_, currentLine_, indentColumn_);
                 break;
             }
 
