@@ -1,20 +1,20 @@
 Goal:
     I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
-    Require:
+    Story:
         Usage Information
 
         Require: If invoked with invalid parameters, display correct usage information.
         Require: Include a -h parameter to display a help message with all valid parameters and their usage.
 
-    Include: test/bad-include-1/include.m6r
-    Include: test/bad-include-1/include.m6r
+        Include: test/bad-include-1/include.m6r
+        Include: test/bad-include-1/include.m6r
 
-    Require:
-        Code quality
+        Require:
+            Code quality
 
-        Require: Use JSDoc annotations for all functions.
-        Require: Use 4 spaces for indentation in the source code.
-        Require: Where any functions may throw errors, include try/catch blocks to handle those error conditions.
-        Require: For code style, do not use an "else" if the previous block in an if statement ends with a "return" statement.
+            Require: Use JSDoc annotations for all functions.
+            Require: Use 4 spaces for indentation in the source code.
+            Require: Where any functions may throw errors, include try/catch blocks to handle those error conditions.
+            Require: For code style, do not use an "else" if the previous block in an if statement ends with a "return" statement.
 
