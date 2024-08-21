@@ -157,7 +157,8 @@ Goal:
             are found then the test runner should emit a console error with the line number and exit with an error status.
 
         Require:
-            The test runner code should be commented to make it easy to understand how it works.
+            The test runner code should be commented to make it easy to understand how it works.  Comments should include
+            doc strings for all functions, and comments to explain any complex logic.
 
         Require:
             Do not use elif or else statements if the preceding statement returns or calls sys.exit
