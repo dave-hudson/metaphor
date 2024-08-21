@@ -80,28 +80,25 @@ Goal:
         I: would like my tests to be configured via a single test configuration file,
         So: I can easily configure tests and test settings.
 
-        Require: 
-            Test configuration.
+        Require: The set of tests wil be defined by a JSON test configuration file.
 
-            Require: The set of tests wil be defined by a JSON test configuration file.
+        Require: For each test there will be a series of JSON key/value pairs.
 
-            Require: For each test there will be a series of JSON key/value pairs.
+        Require:
+            Each test has a set of mandatory or optional key/value pairs
+
+            Require: Mandatory key/value: "command".  This is the test command that will be executed to run the test.
+            Require:
+                Mandatory key/value: "type".  Indicates if this is a positive or negative test.  Values are either
+                "positive" or "negative".
 
             Require:
-                Each test has a set of mandatory or optional key/value pairs
+                Optional key/value: "expected".  If this key/value pair exists, it specifies a file that contains expected
+                results from the test.
 
-                Require: Mandatory key/value: "command".  This is the test command that will be executed to run the test.
-                Require:
-                    Mandatory key/value: "type".  Indicates if this is a positive or negative test.  Values are either
-                    "positive" or "negative".
-
-                Require:
-                    Optional key/value: "expected".  If this key/value pair exists, it specifies a file that contains expected
-                    results from the test.
-
-                Require:
-                    Optional key/value: "timeout".  If this key/value pair exists, it sets the timeout, in ms, for this test,
-                    and overrides the default timeout.
+            Require:
+                Optional key/value: "timeout".  If this key/value pair exists, it sets the timeout, in ms, for this test,
+                and overrides the default timeout.
 
             Example:
                 The following is an example of two tests configured in a JSON test configuration file:
