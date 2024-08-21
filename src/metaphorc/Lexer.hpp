@@ -31,6 +31,7 @@ private:
     bool processingIndent_;             // Are we processing indentation at the start of a line?
     int indentOffset_;                  // If we're handling indentation changes, how far do we need to move?
     bool inTextBlock_;                  // Are we processing a text block?
+    bool seenNonWhitespaceCharacters_;  // Have we seen any non-whitespace characters on this line so far?
     Token currentToken_;                // Current token we're processing
 
     const std::map<std::string, TokenType> keyword_map = {

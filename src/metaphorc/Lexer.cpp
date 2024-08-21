@@ -17,6 +17,7 @@ Lexer::Lexer(const std::string& filename) :
         processingIndent_(false),
         indentOffset_(0),
         inTextBlock_(false),
+        seenNonWhitespaceCharacters_(false),
         currentToken_(TokenType::END_OF_FILE, "", "", "", 0, 0) {
     updateEndOfLine();
 
@@ -108,6 +109,7 @@ auto Lexer::readKeywordOrText() -> Token {
     if (keyword_map.find(word) != keyword_map.end()) {
         // Once we've seen a keyword, we're no longer in a text block.
         inTextBlock_ = false;
+        seenNonWhitespaceCharacters_ = true;
         return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
     }
 
@@ -120,7 +122,13 @@ auto Lexer::readKeywordOrText() -> Token {
         }
     }
 
-    inTextBlock_ = true;
+    // If we haven't seen anything other than whitespace on this line so far then we can assume we're in a text block.
+    // If we have seen characters before they will have been a keyword and this isn't a text block.
+    if (!seenNonWhitespaceCharacters_) {
+        inTextBlock_ = true;
+    }
+
+    seenNonWhitespaceCharacters_ = true;
     position_ = endOfLine_;
     return Token(TokenType::TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn);
 }
@@ -148,9 +156,18 @@ auto Lexer::getNextToken() -> Token {
 
         // If we have a new line then get the next one.
         if (ch == '\n') {
+            // If we've not seen any non-whitespace characters and we're in a text block then emit a blank
+            // line.  Then pretend we saw characters so next time we process the end of line.
+            if (!seenNonWhitespaceCharacters_ && inTextBlock_) {
+                seenNonWhitespaceCharacters_ = true;
+                currentToken_ = Token(TokenType::TEXT, "", line_, filename_, currentLine_ - 1, indentColumn_);
+                break;
+            }
+
             processingIndent_ = true;
             consumeNewline();
             updateEndOfLine();
+            seenNonWhitespaceCharacters_ = false;
             continue;
         }
 
