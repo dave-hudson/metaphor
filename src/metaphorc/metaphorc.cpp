@@ -17,12 +17,23 @@ void printUsage(const char* programName) {
 
 void simplifyText(ASTNode& node) {
     size_t i = 0;
+    bool allowTextMerge = true;
+
     while (i < node.childNodes_.size()) {
         auto& child = node.childNodes_[i];
 
         // If we have anything other than a text node then simply recurse.
         if (child->tokenType_ != TokenType::TEXT) {
             simplifyText(*child);
+            i++;
+            allowTextMerge = false;
+            continue;
+        }
+
+        // Do we have a structured code delimeter?  If yes the flip the sense of whether we can
+        // merge text nodes or not.
+        if (child->value_.substr(0, 3) == "```") {
+            allowTextMerge = !allowTextMerge;
             i++;
             continue;
         }
@@ -34,8 +45,21 @@ void simplifyText(ASTNode& node) {
             continue;
         }
 
+        // If our sibling isn't a text node we can't merge it.
         auto& sibling = node.childNodes_[i + 1];
         if (sibling->tokenType_ != TokenType::TEXT) {
+            i++;
+            continue;
+        }
+
+        // If we're not allowing merges then we can't merge it.
+        if (!allowTextMerge) {
+            i++;
+            continue;
+        }
+
+        // Is our sibling a structured code delimeter?  If yes we can't merge it.
+        if (sibling->value_.substr(0, 3) == "```") {
             i++;
             continue;
         }

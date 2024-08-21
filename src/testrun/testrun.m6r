@@ -104,6 +104,7 @@ Goal:
             Example:
                 The following is an example of two tests configured in a JSON test configuration file:
 
+                ```json
                 [
                     {
                         "command": "build/metaphorc test/test1.m6r",
@@ -115,6 +116,7 @@ Goal:
                         "type": "negative"
                     }
                 ]
+                ```
 
     Story:
         Tool invocation.
