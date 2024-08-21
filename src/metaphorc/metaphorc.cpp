@@ -15,6 +15,43 @@ void printUsage(const char* programName) {
         << std::endl;
 }
 
+void simplifyText(ASTNode& node) {
+    size_t i = 0;
+    while (i < node.childNodes_.size()) {
+        auto& child = node.childNodes_[i];
+
+        // If we have anything other than a text node then simply recurse.
+        if (child->tokenType_ != TokenType::TEXT) {
+            simplifyText(*child);
+            i++;
+            continue;
+        }
+
+        // We have a text node.  Look to see if we have another one following it, in which case we
+        // may want to merge these two.
+        if (i == node.childNodes_.size() - 1) {
+            i++;
+            continue;
+        }
+
+        auto& sibling = node.childNodes_[i + 1];
+        if (sibling->tokenType_ != TokenType::TEXT) {
+            i++;
+            continue;
+        }
+
+        // If our next text is an empty line then erase it, but move on from this block.
+        if (sibling->value_.length() == 0) {
+            node.childNodes_.erase(node.childNodes_.begin() + i + 1);
+            i++;
+            continue;
+        }
+
+        child->value_ += " " + sibling->value_;
+        node.childNodes_.erase(node.childNodes_.begin() + i + 1);
+    }
+}
+
 void recurse(const ASTNode& node, int level, std::string section, std::ostream& out) {
     switch (node.tokenType_) {
     case TokenType::TEXT:
@@ -146,6 +183,7 @@ int main(int argc, char* argv[]) {
     }
 
     auto syntaxTree = parser.getSyntaxTree();
+    simplifyText(*syntaxTree);
     recurse(*syntaxTree, 0, "1", *outStream);
 
     return 0;
