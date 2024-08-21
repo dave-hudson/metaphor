@@ -88,6 +88,7 @@ Goal:
             Each test has a set of mandatory or optional key/value pairs
 
             Require: Mandatory key/value: "command".  This is the test command that will be executed to run the test.
+
             Require:
                 Mandatory key/value: "type".  Indicates if this is a positive or negative test.  Values are either
                 "positive" or "negative".
