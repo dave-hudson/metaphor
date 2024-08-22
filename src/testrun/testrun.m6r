@@ -1,6 +1,10 @@
 Goal:
     Create a test runner for the metaphor compiler
 
+    An implementation of an earlier version of this has already been implemented:
+
+    Code: src/testrun/testrun.py
+
     Story:
         Core functionality.
 
