@@ -30,17 +30,28 @@ void simplifyText(ASTNode& node) {
             continue;
         }
 
-        // Do we have a structured code delimeter?  If yes the flip the sense of whether we can
-        // merge text nodes or not.
-        if (child->value_.substr(0, 3) == "```") {
-            allowTextMerge = !allowTextMerge;
+        // We have a text node.  Look to see if we have another one following it, in which case we
+        // may want to merge these two.
+        if (i == node.childNodes_.size() - 1) {
             i++;
             continue;
         }
 
-        // We have a text node.  Look to see if we have another one following it, in which case we
-        // may want to merge these two.
-        if (i == node.childNodes_.size() - 1) {
+        // Do we have a structured code delimeter?  If yes, then we're going to flip the sense
+        // of whether we're allowing text merges or not.  However, before we do that we need to
+        // check for an edge case where we're going to allow text merges immediately after the
+        // delimeter and might want to merge any blank lines.
+        if (child->value_.substr(0, 3) == "```") {
+            if (!allowTextMerge) {
+                auto& sibling = node.childNodes_[i + 1];
+                if (sibling->tokenType_ == TokenType::TEXT && sibling->value_.length() == 0) {
+                    node.childNodes_.erase(node.childNodes_.begin() + i + 1);
+                    i++;
+                    continue;
+                }
+            }
+
+            allowTextMerge = !allowTextMerge;
             i++;
             continue;
         }
