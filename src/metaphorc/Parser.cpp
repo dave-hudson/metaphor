@@ -1,4 +1,6 @@
 #include "Parser.hpp"
+#include "CodeLexer.hpp"
+#include "MetaphorLexer.hpp"
 
 Parser::Parser() :
         currentToken_(TokenType::NONE, "", "", "", 0, 0),
@@ -21,6 +23,10 @@ auto Parser::getNextToken() -> Token {
 
         case TokenType::INCLUDE:
             parseInclude();
+            break;
+
+        case TokenType::CODE:
+            parseCode();
             break;
 
         case TokenType::END_OF_FILE:
@@ -59,8 +65,6 @@ auto Parser::loadFile(const std::string& filename) -> void {
     }
 
     processedFiles_.insert(canonicalFilename);
-
-    lexers_.push_back(std::make_unique<Lexer>(filename));
 }
 
 auto Parser::parseInclude() -> void {
@@ -71,6 +75,18 @@ auto Parser::parseInclude() -> void {
 
     std::string filename = token.value;
     loadFile(filename);
+    lexers_.push_back(std::make_unique<MetaphorLexer>(filename));
+}
+
+auto Parser::parseCode() -> void {
+    const auto& token = getNextToken();
+    if (token.type != TokenType::TEXT) {
+        raiseSyntaxError(token, "Expected file name in 'Code'");
+    }
+
+    std::string filename = token.value;
+    loadFile(filename);
+    lexers_.push_back(std::make_unique<CodeLexer>(filename));
 }
 
 auto Parser::parseText(const Token& textToken) -> std::unique_ptr<ASTNode> {
@@ -568,6 +584,7 @@ auto Parser::getSyntaxTree() -> std::unique_ptr<ASTNode> {
 
 auto Parser::parse(const std::string& initial_file) -> bool {
     loadFile(initial_file);
+    lexers_.push_back(std::make_unique<MetaphorLexer>(initial_file));
 
     const auto& token = getNextToken();
     if (token.type != TokenType::GOAL) {

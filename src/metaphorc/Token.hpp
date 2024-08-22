@@ -9,6 +9,7 @@ enum class TokenType {
     INDENT,
     OUTDENT,
     INCLUDE,
+    CODE,
     TEXT,
     GOAL,
     STORY,
