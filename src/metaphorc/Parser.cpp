@@ -61,7 +61,7 @@ auto Parser::loadFile(const std::string& filename) -> void {
     std::filesystem::path canonicalFilename = std::filesystem::absolute(filename);
 
     if (processedFiles_.find(canonicalFilename) != processedFiles_.end()) {
-        throw std::runtime_error("'" + filename + "' has already been read via 'Include'");
+        throw std::runtime_error("'" + filename + "' has already been read");
     }
 
     processedFiles_.insert(canonicalFilename);
