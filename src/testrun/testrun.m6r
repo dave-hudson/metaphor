@@ -57,12 +57,16 @@ Goal:
             Example:
                 Given: a test completes,
                 When: the test passes,
-                Then: print a console message: "PASS: <test command>", where <test command> is the test command that was executed.
+                Then:
+                    print a console message: "PASS: <test command>", where <test command> is the test command that was executed.
+                    Use green text for the "PASS:" portion of the message.
 
             Example:
                 Given: a test completes,
                 When: the test fails,
-                Then: print a console message: "FAIL: <test command>", where <test command> is the test command that was executed.
+                Then:
+                    print a console message: "FAIL: <test command>", where <test command> is the test command that was executed.
+                    Use red text for the "FAIL:" portion of the message.
 
     Story:
         Performance.

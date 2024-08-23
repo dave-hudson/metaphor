@@ -14,29 +14,30 @@ def parse_config_file(config_file):
     with open(config_file, 'r') as file:
         try:
             config = json.load(file)
-            for test in config:
-                validate_test_config(test)
+            for idx, test in enumerate(config):
+                validate_test_config(test, idx + 1)
             return config
         except json.JSONDecodeError as e:
             print(f"Error parsing the configuration file: {e}")
             sys.exit(1)
 
-def validate_test_config(test):
+def validate_test_config(test, line_number):
     """Validates each test configuration against the mandatory keys and expected values."""
     mandatory_keys = {"command", "type"}
     valid_types = {"positive", "negative"}
 
     for key in test:
         if key not in {"command", "type", "expected", "timeout"}:
-            print(f"Invalid key '{key}' found in the configuration.")
+            print(f"Invalid key '{key}' found in the configuration on line {line_number}.")
             sys.exit(1)
 
     if not mandatory_keys.issubset(test.keys()):
-        print(f"Mandatory keys missing in test configuration: {mandatory_keys - set(test.keys())}")
+        missing_keys = mandatory_keys - set(test.keys())
+        print(f"Mandatory keys missing in test configuration on line {line_number}: {missing_keys}")
         sys.exit(1)
 
     if test["type"] not in valid_types:
-        print(f"Invalid test type '{test['type']}' in configuration.")
+        print(f"Invalid test type '{test['type']}' in configuration on line {line_number}.")
         sys.exit(1)
 
 def run_test(test):
@@ -47,7 +48,6 @@ def run_test(test):
     expected_file = test.get("expected", None)
 
     print(f"Start {command}")
-
     try:
         process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         stdout, _ = process.communicate(timeout=timeout / 1000)
@@ -56,7 +56,8 @@ def run_test(test):
 
         if test_type == "positive" and exit_code != 0:
             return "FAIL", command, stdout
-        elif test_type == "negative" and exit_code == 0:
+
+        if test_type == "negative" and exit_code == 0:
             return "FAIL", command, stdout
 
         if expected_file:
@@ -66,11 +67,9 @@ def run_test(test):
                     return "FAIL", command, stdout
 
         return "PASS", command, stdout
-
     except subprocess.TimeoutExpired:
         process.kill()
         return "FAIL", command, f"Test timed out after {timeout} ms"
-
     except Exception as e:
         return "FAIL", command, str(e)
 
@@ -84,7 +83,11 @@ def execute_tests(config, max_parallel_tests):
             result = future.result()
             results.append(result)
             status, command, _ = result
-            print(f"{status}: {command}")
+            if status == "PASS":
+                # Green text for PASS, red text for FAIL.
+                print(f"\033[92mPASS: {command}\033[0m")
+            else:
+                print(f"\033[91mFAIL: {command}\033[0m")
 
         return results
 
