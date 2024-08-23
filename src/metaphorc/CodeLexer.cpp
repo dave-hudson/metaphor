@@ -44,7 +44,7 @@ auto CodeLexer::getLanguageFromFilename() -> std::string {
     static const std::unordered_map<std::string, std::string> extensionToLanguage = {
         {".cpp", "cpp"},
         {".hpp", "cpp"},
-        {".h", "cpp"},
+        {".h", "c"},
         {".c", "c"},
         {".cs", "csharp"},
         {".java", "java"},
@@ -84,7 +84,8 @@ auto CodeLexer::getLanguageFromFilename() -> std::string {
     };
 
     std::string extension = filename_.substr(filename_.find_last_of('.'));
-    
+    std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
     // Look up the extension in the map
     auto it = extensionToLanguage.find(extension);
     if (it != extensionToLanguage.end()) {
