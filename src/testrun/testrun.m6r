@@ -64,7 +64,6 @@ Goal:
                 When: the test fails,
                 Then: print a console message: "FAIL: <test command>", where <test command> is the test command that was executed.
 
-
     Story:
         Performance.
 
