@@ -6,6 +6,7 @@
 
 CodeLexer::CodeLexer(const std::string& filename) :
         Lexer(filename),
+        emitFilename_(true),
         emitFormatDelimeter_(true),
         emitEndOfFile_(false) {
 }
@@ -97,9 +98,15 @@ auto CodeLexer::getLanguageFromFilename() -> std::string {
 }
 
 auto CodeLexer::getNextToken() -> Token {
+    if (emitFilename_) {
+        emitFilename_ = false;
+        currentToken_ = Token(TokenType::TEXT, "File: " + filename_, "", filename_, 0, 1);
+        return currentToken_;
+    }
+
     if (emitFormatDelimeter_) {
         emitFormatDelimeter_ = false;
-        currentToken_ = Token(TokenType::TEXT, "```" + getLanguageFromFilename(), line_, filename_, 0, 1);
+        currentToken_ = Token(TokenType::TEXT, "```" + getLanguageFromFilename(), "", filename_, 0, 1);
         return currentToken_;
     }
 
@@ -112,7 +119,7 @@ auto CodeLexer::getNextToken() -> Token {
     while (true) {
         // If we've hit the end of the file then emit another format delimeter before the EOF.
         if (position_ >= input_.size()) {
-            currentToken_ = Token(TokenType::TEXT, "```", line_, filename_, currentLine_, 1);
+            currentToken_ = Token(TokenType::TEXT, "```", "", filename_, currentLine_, 1);
             emitEndOfFile_ = true;
             break;
         }
@@ -121,11 +128,20 @@ auto CodeLexer::getNextToken() -> Token {
 
         // If we have a new line then get the next one.
         if (ch == '\n') {
+            // If we've not seen any non-whitespace characters and we're in a text block then emit a blank line.
+            if (!seenNonWhitespaceCharacters_) {
+                seenNonWhitespaceCharacters_ = true;
+                currentToken_ = Token(TokenType::TEXT, "", line_, filename_, currentLine_, 1);
+                return currentToken_;
+            }
+
             consumeNewline();
             updateEndOfLine();
+            seenNonWhitespaceCharacters_ = false;
             continue;
         }
 
+        seenNonWhitespaceCharacters_ = true;
         currentToken_ = readText();
         break;
     }

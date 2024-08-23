@@ -13,6 +13,7 @@ Lexer::Lexer(const std::string& filename) :
         endOfLine_(0),
         currentLine_(1),
         currentColumn_(1),
+        seenNonWhitespaceCharacters_(false),
         currentToken_(TokenType::END_OF_FILE, "", "", "", 0, 0) {
     if (!std::filesystem::exists(filename)) {
         throw std::runtime_error("File not found: " + filename);

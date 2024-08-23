@@ -11,8 +11,7 @@ MetaphorLexer::MetaphorLexer(const std::string& filename) :
         indentColumn_(1),
         processingIndent_(false),
         indentOffset_(0),
-        inTextBlock_(false),
-        seenNonWhitespaceCharacters_(false) {
+        inTextBlock_(false) {
     updateEndOfLine();
 
     if (!std::filesystem::exists(filename)) {

@@ -24,6 +24,7 @@ protected:
     size_t endOfLine_;                  // Offset of the last character of the current line being lexed
     int currentLine_;                   // Current line number being processed (starting at 1)
     int currentColumn_;                 // Current column number being processed (starting at 1)
+    bool seenNonWhitespaceCharacters_;  // Have we seen any non-whitespace characters on this line so far?
     Token currentToken_;                // Current token we're processing
 };
 
