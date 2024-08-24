@@ -2,34 +2,39 @@ Goal:
     Build a compiler to process files written in a language, Metaphor, allowing them to be used to drive a dialogue
     with an LLM.
 
-    An implementation of the current compiler is provided here:
-
-    Code: src/metaphorc/Token.hpp
-
-    Code: src/metaphorc/Lexer.hpp
-
-    Code: src/metaphorc/Lexer.cpp
-
-    Code: src/metaphorc/CodeLexer.hpp
-
-    Code: src/metaphorc/CodeLexer.cpp
-
-    Code: src/metaphorc/MetaphorLexer.hpp
-
-    Code: src/metaphorc/MetaphorLexer.cpp
-
-    Code: src/metaphorc/Parser.hpp
-
-    Code: src/metaphorc/Parser.cpp
-
-    Code: src/metaphorc/ASTNode.hpp
-
-    Code: src/metaphorc/ASTNode.cpp
-
-    Code: src/metaphorc/metaphorc.cpp
-
     Story:
         As: a software product designer
         I: want to describe the intent of a software product to an LLM,
         So: it can help me build and refine the software components.
+
+    Story:
+        Previous version.
+
+        Require:
+            An implementation of the current compiler is provided here.  It may not accurately reflect the
+            requirements stated previously, in which case it will need to be modified to support them.
+
+            Code: src/metaphorc/Token.hpp
+
+            Code: src/metaphorc/Lexer.hpp
+
+            Code: src/metaphorc/Lexer.cpp
+
+            Code: src/metaphorc/CodeLexer.hpp
+
+            Code: src/metaphorc/CodeLexer.cpp
+
+            Code: src/metaphorc/MetaphorLexer.hpp
+
+            Code: src/metaphorc/MetaphorLexer.cpp
+
+            Code: src/metaphorc/Parser.hpp
+
+            Code: src/metaphorc/Parser.cpp
+
+            Code: src/metaphorc/ASTNode.hpp
+
+            Code: src/metaphorc/ASTNode.cpp
+
+            Code: src/metaphorc/metaphorc.cpp
 

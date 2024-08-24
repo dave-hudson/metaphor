@@ -1,10 +1,6 @@
 Goal:
     Create a test runner for the metaphor compiler
 
-    An implementation of an earlier version of this has already been implemented:
-
-    Code: src/testrun/testrun.py
-
     Story:
         Core functionality.
 
@@ -148,15 +144,11 @@ Goal:
             of 1 if any of the tests failed.
 
     Story:
-        Implementation.
+        Robust implementation.
 
         As: an engineer working on the metaphor compiler,
-        I: want my test runner to be easy to use and understand,
-        So: I can maintain and enhance it over time.
-
-        Require: The test runner will be built with the latest version of python 3.
-
-        Require: Code should be indented by 4 spaces.
+        I: want the implementation to be robust and not attempt to generate ouputs that might be incorrect,
+        So: I want the code to check for potential runtime problems.
 
         Require:
             All filesystem operations should be checked to see if they have completed successfully.  If any fail then these
@@ -166,9 +158,31 @@ Goal:
             The config file must be checked to ensure there are no keys that are not defined in this requirement.  If any
             are found then the test runner should emit a console error with the line number and exit with an error status.
 
-        Require:
-            The test runner code should be commented to make it easy to understand how it works.  Comments should include
-            doc strings for all functions, and comments to explain any complex logic.
+    Story:
+        Coding standards.
+
+        As: an engineer working on the metaphor compiler,
+        I: want my test runner to be easy to use and understand,
+        So: I can maintain and enhance it over time.
+
+        Require: The test runner will be built with the latest version of python 3.
+
+        Require: Code should be indented by 4 spaces.
+
+        Require: Use docstrings to describe all modules, classes, and functions.
+
+        Require: Use additional comments to describe any complex logic.
+
+        Require: The import list in any module should follow PEP 8 guidelines.
 
         Require:
             Do not use elif or else statements if the preceding statement returns or calls sys.exit
+
+    Story:
+        Previous version.
+
+        Require:
+            An implementation of the test runner is provided here.  It may not accurately reflect the
+            requirements stated previously, in which case it will need to be modified to support them.
+
+            Code: src/testrun/testrun.py
