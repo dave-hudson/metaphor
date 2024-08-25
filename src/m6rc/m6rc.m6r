@@ -15,25 +15,14 @@ Goal:
             requirements stated previously, in which case it will need to be modified to support them.
 
             Code: src/m6rc/Token.hpp
-
             Code: src/m6rc/Lexer.hpp
-
             Code: src/m6rc/Lexer.cpp
-
             Code: src/m6rc/CodeLexer.hpp
-
             Code: src/m6rc/CodeLexer.cpp
-
             Code: src/m6rc/MetaphorLexer.hpp
-
             Code: src/m6rc/MetaphorLexer.cpp
-
             Code: src/m6rc/Parser.hpp
-
             Code: src/m6rc/Parser.cpp
-
             Code: src/m6rc/ASTNode.hpp
-
             Code: src/m6rc/ASTNode.cpp
-
             Code: src/m6rc/m6rc.cpp
