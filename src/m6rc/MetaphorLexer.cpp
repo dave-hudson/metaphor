@@ -31,21 +31,21 @@ auto MetaphorLexer::processIndentation() -> Token {
         if (indentOffset_ >= INDENT_SPACES) {
             indentOffset_ -= INDENT_SPACES;
             indentColumn_ += INDENT_SPACES;
-            return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+            return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentToken_.column);
         }
 
         indentOffset_ += INDENT_SPACES;
         indentColumn_ -= INDENT_SPACES;
-        return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
+        return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentToken_.column);
     }
 
     if (indentOffset_ > 0) {
         indentOffset_ = 0;
-        return Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length() - indentOffset_);
+        return Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentToken_.column);
     }
 
     indentOffset_ = 0;
-    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentColumn_ - currentToken_.value.length());
+    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentToken_.column);
 }
 
 auto MetaphorLexer::consumeWhitespace() -> void {
