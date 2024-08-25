@@ -110,12 +110,12 @@ Goal:
                 ```json
                 [
                     {
-                        "command": "build/metaphorc test/test1.m6r",
+                        "command": "build/m6rc test/test1.m6r",
                         "type": "positive",
                         "timeout": 1000
                     },
                     {
-                        "command": "build/metaphorc test/test2.m6r",
+                        "command": "build/m6rc test/test2.m6r",
                         "type": "negative"
                     }
                 ]

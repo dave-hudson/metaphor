@@ -6,7 +6,7 @@ RM := rm
 #
 # Define our target app.
 #
-APP := build/metaphorc
+APP := build/m6rc
 
 #
 # Define the source files for our build.
@@ -34,7 +34,7 @@ $(OBJ_DIR)/%.o : src/%.cpp
 all: $(APP)
 
 $(OBJ_DIR):
-	mkdir -p $(OBJ_DIR) $(OBJ_DIR)/metaphorc
+	mkdir -p $(OBJ_DIR) $(OBJ_DIR)/m6rc
 
 # Include dependency files
 -include $(METAPHORC_OBJS:.o=.d)

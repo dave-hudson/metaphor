@@ -1,38 +1,38 @@
 [
     {
-        "command": "build/metaphorc test/bad-include-1/test.m6r",
+        "command": "build/m6rc test/bad-include-1/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/metaphorc test/bad-include-2/test.m6r",
+        "command": "build/m6rc test/bad-include-2/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/metaphorc test/bad-indent-1/test.m6r",
+        "command": "build/m6rc test/bad-indent-1/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/metaphorc test/bad-indent-2/test.m6r",
+        "command": "build/m6rc test/bad-indent-2/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/metaphorc test/include-1/test.m6r",
+        "command": "build/m6rc test/include-1/test.m6r",
         "type": "positive"
     },
     {
-        "command": "build/metaphorc test/missing-as-1/test.m6r",
+        "command": "build/m6rc test/missing-as-1/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/metaphorc test/missing-i-1/test.m6r",
+        "command": "build/m6rc test/missing-i-1/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/metaphorc test/missing-so-1/test.m6r",
+        "command": "build/m6rc test/missing-so-1/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/metaphorc test/positive-1/test.m6r",
+        "command": "build/m6rc test/positive-1/test.m6r",
         "type": "positive"
     }
 ]

@@ -14,26 +14,26 @@ Goal:
             An implementation of the current compiler is provided here.  It may not accurately reflect the
             requirements stated previously, in which case it will need to be modified to support them.
 
-            Code: src/metaphorc/Token.hpp
+            Code: src/m6rc/Token.hpp
 
-            Code: src/metaphorc/Lexer.hpp
+            Code: src/m6rc/Lexer.hpp
 
-            Code: src/metaphorc/Lexer.cpp
+            Code: src/m6rc/Lexer.cpp
 
-            Code: src/metaphorc/CodeLexer.hpp
+            Code: src/m6rc/CodeLexer.hpp
 
-            Code: src/metaphorc/CodeLexer.cpp
+            Code: src/m6rc/CodeLexer.cpp
 
-            Code: src/metaphorc/MetaphorLexer.hpp
+            Code: src/m6rc/MetaphorLexer.hpp
 
-            Code: src/metaphorc/MetaphorLexer.cpp
+            Code: src/m6rc/MetaphorLexer.cpp
 
-            Code: src/metaphorc/Parser.hpp
+            Code: src/m6rc/Parser.hpp
 
-            Code: src/metaphorc/Parser.cpp
+            Code: src/m6rc/Parser.cpp
 
-            Code: src/metaphorc/ASTNode.hpp
+            Code: src/m6rc/ASTNode.hpp
 
-            Code: src/metaphorc/ASTNode.cpp
+            Code: src/m6rc/ASTNode.cpp
 
-            Code: src/metaphorc/metaphorc.cpp
+            Code: src/m6rc/m6rc.cpp
