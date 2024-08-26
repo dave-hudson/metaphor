@@ -92,6 +92,14 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
     case TokenType::PRODUCT:
     case TokenType::TRAIT:
     case TokenType::EXAMPLE:
+        if (node.childNodes_.size()) {
+            const auto& childToken = node.childNodes_[0];
+            if (childToken->tokenType_ == TokenType::KEYWORD_TEXT) {
+                out << section << " " << childToken->value_ << std::endl;
+                break;
+            }
+        }
+
         out << section << std::endl;
         break;
 
