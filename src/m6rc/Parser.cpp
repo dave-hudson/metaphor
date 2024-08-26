@@ -69,7 +69,7 @@ auto Parser::loadFile(const std::string& filename) -> void {
 
 auto Parser::parseInclude() -> void {
     const auto& token = getNextToken();
-    if (token.type != TokenType::TEXT) {
+    if (token.type != TokenType::KEYWORD_TEXT) {
         raiseSyntaxError(token, "Expected file name in 'Include'");
     }
 
@@ -80,13 +80,17 @@ auto Parser::parseInclude() -> void {
 
 auto Parser::parseCode() -> void {
     const auto& token = getNextToken();
-    if (token.type != TokenType::TEXT) {
+    if (token.type != TokenType::KEYWORD_TEXT) {
         raiseSyntaxError(token, "Expected file name in 'Code'");
     }
 
     std::string filename = token.value;
     loadFile(filename);
     lexers_.push_back(std::make_unique<CodeLexer>(filename));
+}
+
+auto Parser::parseKeywordText(const Token& keywordTextToken) -> std::unique_ptr<ASTNode> {
+    return std::make_unique<ASTNode>(keywordTextToken);
 }
 
 auto Parser::parseText(const Token& textToken) -> std::unique_ptr<ASTNode> {
@@ -97,13 +101,14 @@ auto Parser::parseProduct(const Token& defineToken) -> std::unique_ptr<ASTNode> 
     auto defineNode = std::make_unique<ASTNode>(defineToken);
 
     const auto& initToken = getNextToken();
-    if (initToken.type == TokenType::TEXT) {
-        defineNode->addChild(parseText(initToken));
-        return defineNode;
-    }
-
-    if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError(initToken, "Expected indent for 'Product' block");
+    if (initToken.type == TokenType::KEYWORD_TEXT) {
+        defineNode->addChild(parseKeywordText(initToken));
+        const auto& indentToken = getNextToken();
+        if (indentToken.type != TokenType::INDENT) {
+            raiseSyntaxError(indentToken, "Expected indent for 'Product' block");
+        }
+    } else if (initToken.type != TokenType::INDENT) {
+        raiseSyntaxError(initToken, "Expected description or indent for 'Product' block");
     }
 
     auto blockIndentLevel = indentLevel_;
@@ -143,12 +148,13 @@ auto Parser::parseTrait(const Token& traitToken) -> std::unique_ptr<ASTNode> {
     auto traitNode = std::make_unique<ASTNode>(traitToken);
 
     const auto& initToken = getNextToken();
-    if (initToken.type == TokenType::TEXT) {
-        traitNode->addChild(parseText(initToken));
-        return traitNode;
-    }
-
-    if (initToken.type != TokenType::INDENT) {
+    if (initToken.type == TokenType::KEYWORD_TEXT) {
+        traitNode->addChild(parseKeywordText(initToken));
+        const auto& indentToken = getNextToken();
+        if (indentToken.type != TokenType::INDENT) {
+            raiseSyntaxError(indentToken, "Expected indent for 'Trait' block");
+        }
+    } else if (initToken.type != TokenType::INDENT) {
         raiseSyntaxError(initToken, "Expected description or indent for 'Trait' block");
     }
 
@@ -194,12 +200,13 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
     auto exampleNode = std::make_unique<ASTNode>(exampleToken);
 
     const auto& initToken = getNextToken();
-    if (initToken.type == TokenType::TEXT) {
-        exampleNode->addChild(parseText(initToken));
-        return exampleNode;
-    }
-
-    if (initToken.type != TokenType::INDENT) {
+    if (initToken.type == TokenType::KEYWORD_TEXT) {
+        exampleNode->addChild(parseKeywordText(initToken));
+        const auto& indentToken = getNextToken();
+        if (indentToken.type != TokenType::INDENT) {
+            raiseSyntaxError(indentToken, "Expected indent for 'Example' block");
+        }
+    } else if (initToken.type != TokenType::INDENT) {
         raiseSyntaxError(initToken, "Expected description or indent for 'Example' block");
     }
 

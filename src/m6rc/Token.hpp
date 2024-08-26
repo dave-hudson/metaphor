@@ -10,6 +10,7 @@ enum class TokenType {
     OUTDENT,
     INCLUDE,
     CODE,
+    KEYWORD_TEXT,
     TEXT,
     PRODUCT,
     TRAIT,

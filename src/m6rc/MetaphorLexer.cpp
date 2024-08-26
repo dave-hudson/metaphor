@@ -74,6 +74,12 @@ auto MetaphorLexer::readKeywordOrText() -> Token {
         return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
     }
 
+    // Have we already seen a keyword?  If yes then this is keyword text
+    if (seenNonWhitespaceCharacters_) {
+        position_ = endOfLine_;
+        return Token(TokenType::KEYWORD_TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn);
+    }
+
     // We're dealing with text.  If we're already in a text block then we want to use the same indentation
     // level for all rows of text unless we see outdenting (in which case we've got bad text, but we'll
     // leave that to the parser).
@@ -83,12 +89,7 @@ auto MetaphorLexer::readKeywordOrText() -> Token {
         }
     }
 
-    // If we haven't seen anything other than whitespace on this line so far then we can assume we're in a text block.
-    // If we have seen characters before they will have been a keyword and this isn't a text block.
-    if (!seenNonWhitespaceCharacters_) {
-        inTextBlock_ = true;
-    }
-
+    inTextBlock_ = true;
     seenNonWhitespaceCharacters_ = true;
     position_ = endOfLine_;
     return Token(TokenType::TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn);
