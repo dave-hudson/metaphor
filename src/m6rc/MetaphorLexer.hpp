@@ -27,7 +27,6 @@ private:
         {"Code:", TokenType::CODE},
         {"Product:", TokenType::PRODUCT},
         {"Trait:", TokenType::TRAIT},
-        {"Require:", TokenType::REQUIRE},
         {"Example:", TokenType::EXAMPLE}
     };
 };
