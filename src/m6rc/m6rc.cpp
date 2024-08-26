@@ -17,7 +17,7 @@ void printUsage(const char* programName) {
 
 void simplifyText(ASTNode& node) {
     size_t i = 0;
-    bool allowTextMerge = true;
+    bool inFormatedSection = false;
 
     while (i < node.childNodes_.size()) {
         auto& child = node.childNodes_[i];
@@ -26,52 +26,48 @@ void simplifyText(ASTNode& node) {
         if (child->tokenType_ != TokenType::TEXT) {
             simplifyText(*child);
             i++;
-            allowTextMerge = false;
             continue;
         }
 
-        // We have a text node.  Look to see if we have another one following it, in which case we
-        // may want to merge these two.
+        // We have a text node.  If we don't have a sibling then we can't look to merge anything.
         if (i == node.childNodes_.size() - 1) {
             i++;
             continue;
         }
 
-        // Do we have a structured code delimeter?  If yes, then we're going to flip the sense
-        // of whether we're allowing text merges or not.  However, before we do that we need to
-        // check for an edge case where we're going to allow text merges immediately after the
-        // delimeter and might want to merge any blank lines.
+        // Do we have a formatted code delimeter?  If yes then track that.
         if (child->value_.substr(0, 3) == "```") {
-            if (!allowTextMerge) {
-                auto& sibling = node.childNodes_[i + 1];
-                if (sibling->tokenType_ == TokenType::TEXT && sibling->value_.length() == 0) {
-                    node.childNodes_.erase(node.childNodes_.begin() + i + 1);
-                    i++;
-                    continue;
-                }
-            }
-
-            allowTextMerge = !allowTextMerge;
-            i++;
-            continue;
+            inFormatedSection = true;
         }
 
         // If our sibling isn't a text node we can't merge it.
         auto& sibling = node.childNodes_[i + 1];
         if (sibling->tokenType_ != TokenType::TEXT) {
+            inFormatedSection = false;
             i++;
             continue;
         }
 
-        // If we're not allowing merges then we can't merge it.
-        if (!allowTextMerge) {
-            i++;
-            continue;
-        }
-
-        // Is our sibling a structured code delimeter?  If yes we can't merge it.
+        // Is our sibling a formatted code delimeter?
         if (sibling->value_.substr(0, 3) == "```") {
+            // If we're in a formatted section then this is ending that block.
+            if (inFormatedSection) {
+                child->value_ += "\n" + sibling->value_;
+                node.childNodes_.erase(node.childNodes_.begin() + i + 1);
+                i += 2;
+                inFormatedSection = false;
+                continue;
+            }
+
+            // We're going to start a new formatted block.
             i++;
+            continue;
+        }
+
+
+        if (inFormatedSection) {
+            child->value_ += "\n" + sibling->value_;
+            node.childNodes_.erase(node.childNodes_.begin() + i + 1);
             continue;
         }
 
@@ -93,35 +89,10 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
         out << node.value_ << std::endl;
         return;
 
-    case TokenType::GOAL:
-    case TokenType::STORY:
-    case TokenType::REQUIRE:
+    case TokenType::PRODUCT:
+    case TokenType::TRAIT:
     case TokenType::EXAMPLE:
         out << section << std::endl;
-        break;
-
-    case TokenType::AS:
-        out << "As" << std::endl;
-        break;
-
-    case TokenType::I:
-        out << "I" << std::endl;
-        break;
-
-    case TokenType::SO:
-        out << "so" << std::endl;
-        break;
-
-    case TokenType::GIVEN:
-        out << "Given" << std::endl;
-        break;
-
-    case TokenType::WHEN:
-        out << "when" << std::endl;
-        break;
-
-    case TokenType::THEN:
-        out << "then" << std::endl;
         break;
 
     default:
@@ -130,9 +101,8 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
 
     int index = 0;
     for (const auto& child : node.childNodes_) {
-        if (child->tokenType_ == TokenType::REQUIRE ||
-                child->tokenType_ == TokenType::EXAMPLE ||
-                child->tokenType_ == TokenType::STORY) {
+        if (child->tokenType_ == TokenType::TRAIT ||
+                child->tokenType_ == TokenType::EXAMPLE) {
             index++;
         }
 
