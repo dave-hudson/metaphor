@@ -87,40 +87,41 @@ void simplifyText(ASTNode& node) {
     }
 }
 
-void recurse(const ASTNode& node, int level, std::string section, std::ostream& out) {
+void recurse(const ASTNode& node, std::string section, std::ostream& out) {
     switch (node.tokenType_) {
     case TokenType::TEXT:
-        out << std::string(level * 2, ' ') << node.value_ << std::endl;
+        out << node.value_ << std::endl;
         return;
 
+    case TokenType::GOAL:
+    case TokenType::STORY:
     case TokenType::REQUIRE:
     case TokenType::EXAMPLE:
-    case TokenType::STORY:
-        out << std::string(level * 2, ' ') << section << std::endl;
+        out << section << std::endl;
         break;
 
     case TokenType::AS:
-        out << std::string(level * 2, ' ') << "As" << std::endl;
+        out << "As" << std::endl;
         break;
 
     case TokenType::I:
-        out << std::string(level * 2, ' ') << "I" << std::endl;
+        out << "I" << std::endl;
         break;
 
     case TokenType::SO:
-        out << std::string(level * 2, ' ') << "so" << std::endl;
+        out << "so" << std::endl;
         break;
 
     case TokenType::GIVEN:
-        out << std::string(level * 2, ' ') << "Given" << std::endl;
+        out << "Given" << std::endl;
         break;
 
     case TokenType::WHEN:
-        out << std::string(level * 2, ' ') << "when" << std::endl;
+        out << "when" << std::endl;
         break;
 
     case TokenType::THEN:
-        out << std::string(level * 2, ' ') << "then" << std::endl;
+        out << "then" << std::endl;
         break;
 
     default:
@@ -135,7 +136,7 @@ void recurse(const ASTNode& node, int level, std::string section, std::ostream& 
             index++;
         }
 
-        recurse(*child, level + 1, section + "." + std::to_string(index), out);
+        recurse(*child, section + "." + std::to_string(index), out);
     }
 }
 
@@ -219,7 +220,7 @@ int main(int argc, char* argv[]) {
 
     auto syntaxTree = parser.getSyntaxTree();
     simplifyText(*syntaxTree);
-    recurse(*syntaxTree, 0, "1", *outStream);
+    recurse(*syntaxTree, "1", *outStream);
 
     return 0;
 }
