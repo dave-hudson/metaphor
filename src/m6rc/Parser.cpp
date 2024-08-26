@@ -171,9 +171,9 @@ auto Parser::parseTrait(const Token& traitToken) -> std::unique_ptr<ASTNode> {
             seenTokenType = TokenType::TRAIT;
             break;
 
-        case TokenType::EXAMPLE:
-            traitNode->addChild(parseExample(token));
-            seenTokenType = TokenType::EXAMPLE;
+        case TokenType::REQUIRE:
+            traitNode->addChild(parseRequire(token));
+            seenTokenType = TokenType::REQUIRE;
             break;
 
         case TokenType::OUTDENT:
@@ -186,6 +186,52 @@ auto Parser::parseTrait(const Token& traitToken) -> std::unique_ptr<ASTNode> {
 
         default:
             raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Trait' block");
+        }
+    }
+}
+
+auto Parser::parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode> {
+    auto requireNode = std::make_unique<ASTNode>(requireToken);
+
+    const auto& initToken = getNextToken();
+    if (initToken.type == TokenType::TEXT) {
+        requireNode->addChild(parseText(initToken));
+        return requireNode;
+    }
+
+    if (initToken.type != TokenType::INDENT) {
+        raiseSyntaxError(initToken, "Expected description or indent for 'Require' block");
+    }
+
+    auto blockIndentLevel = indentLevel_;
+    auto seenTokenType = TokenType::NONE;
+
+    while (true) {
+        const auto& token = getNextToken();
+        switch (token.type) {
+        case TokenType::TEXT:
+            if (seenTokenType != TokenType::NONE) {
+                raiseSyntaxError(token, "Text must come first in a 'Require' block");
+            }
+
+            requireNode->addChild(parseText(token));
+            break;
+
+        case TokenType::EXAMPLE:
+            requireNode->addChild(parseExample(token));
+            seenTokenType = TokenType::EXAMPLE;
+            break;
+
+        case TokenType::OUTDENT:
+        case TokenType::END_OF_FILE:
+            if (indentLevel_ >= blockIndentLevel) {
+                break;
+            }
+
+            return requireNode;
+
+        default:
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Require' block");
         }
     }
 }

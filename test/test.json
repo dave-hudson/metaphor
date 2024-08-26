@@ -20,18 +20,6 @@
         "type": "positive"
     },
     {
-        "command": "build/m6rc test/missing-as-1/test.m6r",
-        "type": "negative"
-    },
-    {
-        "command": "build/m6rc test/missing-i-1/test.m6r",
-        "type": "negative"
-    },
-    {
-        "command": "build/m6rc test/missing-so-1/test.m6r",
-        "type": "negative"
-    },
-    {
         "command": "build/m6rc test/positive-1/test.m6r",
         "type": "positive"
     }

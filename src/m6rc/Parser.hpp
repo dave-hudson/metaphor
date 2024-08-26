@@ -27,6 +27,7 @@ private:
     auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;
     auto parseProduct(const Token& defineToken) -> std::unique_ptr<ASTNode>;
     auto parseTrait(const Token& storyToken) -> std::unique_ptr<ASTNode>;
+    auto parseRequire(const Token& requireToken) -> std::unique_ptr<ASTNode>;
     auto parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>;
 
     std::vector<std::unique_ptr<Lexer>> lexers_;

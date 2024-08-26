@@ -1,7 +1,7 @@
-Goal:
+Product:
     Test indentation processing
 
-    Story:
-        As: a tester
-       I: would like my tests to find problems
-        So: my code works better
+    Trait:
+        As a tester,
+       I would like my tests to find problems,
+        so my code works better

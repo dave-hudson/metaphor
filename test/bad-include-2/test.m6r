@@ -1,7 +1,7 @@
-Goal:
+Product:
     I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
-    Story:
+    Trait:
         Usage Information
 
         Require: If invoked with invalid parameters, display correct usage information.
@@ -9,7 +9,7 @@ Goal:
 
         Include: test/bad-include-2/include.m6r
 
-        Require:
+        Trait:
             Code quality
 
             Require: Use JSDoc annotations for all functions.
