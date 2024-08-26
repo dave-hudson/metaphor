@@ -91,6 +91,7 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
 
     case TokenType::PRODUCT:
     case TokenType::TRAIT:
+    case TokenType::REQUIRE:
     case TokenType::EXAMPLE:
         out << section << std::endl;
         break;
@@ -102,6 +103,7 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
     int index = 0;
     for (const auto& child : node.childNodes_) {
         if (child->tokenType_ == TokenType::TRAIT ||
+                child->tokenType_ == TokenType::REQUIRE ||
                 child->tokenType_ == TokenType::EXAMPLE) {
             index++;
         }
