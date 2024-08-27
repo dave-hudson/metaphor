@@ -21,8 +21,8 @@ auto Parser::getNextToken() -> Token {
             indentLevel_--;
             return currentToken_;
 
-        case TokenType::INCLUDE:
-            parseInclude();
+        case TokenType::EMBED:
+            parseEmbed();
             break;
 
         case TokenType::CODE:
@@ -67,10 +67,10 @@ auto Parser::loadFile(const std::string& filename) -> void {
     processedFiles_.insert(canonicalFilename);
 }
 
-auto Parser::parseInclude() -> void {
+auto Parser::parseEmbed() -> void {
     const auto& token = getNextToken();
     if (token.type != TokenType::KEYWORD_TEXT) {
-        raiseSyntaxError(token, "Expected file name in 'Include'");
+        raiseSyntaxError(token, "Expected file name in 'Embed'");
     }
 
     std::string filename = token.value;

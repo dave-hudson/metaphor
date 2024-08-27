@@ -23,7 +23,7 @@ private:
     bool inTextBlock_;                  // Are we processing a text block?
 
     const std::map<std::string, TokenType> keyword_map = {
-        {"Include:", TokenType::INCLUDE},
+        {"Embed:", TokenType::EMBED},
         {"Code:", TokenType::CODE},
         {"Product:", TokenType::PRODUCT},
         {"Trait:", TokenType::TRAIT},

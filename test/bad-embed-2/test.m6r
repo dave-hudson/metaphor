@@ -8,7 +8,7 @@ Product:
         Trait:
             Include a -h parameter to display a help message with all valid parameters and their usage.
 
-        Include: test/bad-include-2/include.m6r
+        Embed: test/bad-include-2/include.m6r
 
         Trait: Code quality
 
