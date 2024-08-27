@@ -1,23 +1,23 @@
 Product:
     I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
-    Trait: Usage Information
+    Scope: Usage Information
 
-        Trait:
+        Scope:
             If invoked with invalid parameters, display correct usage information.
-        Trait:
+        Scope:
             Include a -h parameter to display a help message with all valid parameters and their usage.
 
         Embed: test/bad-include-2/include.m6r
 
-        Trait: Code quality
+        Scope: Code quality
 
-            Trait:
+            Scope:
                 Use JSDoc annotations for all functions.
-            Trait:
+            Scope:
                 Use 4 spaces for indentation in the source code.
-            Trait:
+            Scope:
                 Where any functions may throw errors, include try/catch blocks to handle those error conditions.
-            Trait:
+            Scope:
                 For code style, do not use an "else" if the previous block in an if statement ends with a "return" statement.
 

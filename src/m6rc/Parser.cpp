@@ -125,9 +125,9 @@ auto Parser::parseProduct(const Token& defineToken) -> std::unique_ptr<ASTNode> 
             defineNode->addChild(parseText(token));
             break;
 
-        case TokenType::TRAIT:
-            defineNode->addChild(parseTrait(token));
-            seenTokenType = TokenType::TRAIT;
+        case TokenType::SCOPE:
+            defineNode->addChild(parseScope(token));
+            seenTokenType = TokenType::SCOPE;
             break;
 
         case TokenType::OUTDENT:
@@ -144,18 +144,18 @@ auto Parser::parseProduct(const Token& defineToken) -> std::unique_ptr<ASTNode> 
     }
 }
 
-auto Parser::parseTrait(const Token& traitToken) -> std::unique_ptr<ASTNode> {
-    auto traitNode = std::make_unique<ASTNode>(traitToken);
+auto Parser::parseScope(const Token& scopeToken) -> std::unique_ptr<ASTNode> {
+    auto scopeNode = std::make_unique<ASTNode>(scopeToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::KEYWORD_TEXT) {
-        traitNode->addChild(parseKeywordText(initToken));
+        scopeNode->addChild(parseKeywordText(initToken));
         const auto& indentToken = getNextToken();
         if (indentToken.type != TokenType::INDENT) {
-            raiseSyntaxError(indentToken, "Expected indent for 'Trait' block");
+            raiseSyntaxError(indentToken, "Expected indent for 'Scope' block");
         }
     } else if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError(initToken, "Expected description or indent for 'Trait' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Scope' block");
     }
 
     auto blockIndentLevel = indentLevel_;
@@ -166,19 +166,19 @@ auto Parser::parseTrait(const Token& traitToken) -> std::unique_ptr<ASTNode> {
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError(token, "Text must come first in a 'Trait' block");
+                raiseSyntaxError(token, "Text must come first in a 'Scope' block");
             }
 
-            traitNode->addChild(parseText(token));
+            scopeNode->addChild(parseText(token));
             break;
 
-        case TokenType::TRAIT:
-            traitNode->addChild(parseTrait(token));
-            seenTokenType = TokenType::TRAIT;
+        case TokenType::SCOPE:
+            scopeNode->addChild(parseScope(token));
+            seenTokenType = TokenType::SCOPE;
             break;
 
         case TokenType::EXAMPLE:
-            traitNode->addChild(parseExample(token));
+            scopeNode->addChild(parseExample(token));
             seenTokenType = TokenType::EXAMPLE;
             break;
 
@@ -188,10 +188,10 @@ auto Parser::parseTrait(const Token& traitToken) -> std::unique_ptr<ASTNode> {
                 break;
             }
 
-            return traitNode;
+            return scopeNode;
 
         default:
-            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Trait' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Scope' block");
         }
     }
 }

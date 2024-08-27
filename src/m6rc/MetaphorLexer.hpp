@@ -26,7 +26,7 @@ private:
         {"Embed:", TokenType::EMBED},
         {"Code:", TokenType::CODE},
         {"Product:", TokenType::PRODUCT},
-        {"Trait:", TokenType::TRAIT},
+        {"Scope:", TokenType::SCOPE},
         {"Example:", TokenType::EXAMPLE}
     };
 };

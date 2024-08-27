@@ -4,53 +4,53 @@ Product:
     As a website developer, I want to pre-render all the pages of my website, so I can allow the website to be
     crawled by spiders that cannot render JavaScript.
 
-    Trait: Environment and dependency setup
+    Scope: Environment and dependency setup
 
-        Trait:
+        Scope:
             The tool must be compatible with Node.js version 14.x or later and headless Google Chrome (current version).
 
-        Trait:
+        Scope:
             Use the latest available stable version of puppeteer for rendering.
 
-        Trait:
+        Scope:
             Use the latest available stable version of yargs for command line options.
 
-        Trait:
+        Scope:
             Use the latest available stable version of yargs for command line options.
 
-        Trait:
+        Scope:
             Use the latest available stable version of axios to handle the HTTP requests.
 
-        Trait:
+        Scope:
             Use the latest available stable version of fast-xml-parser to handle the XML parsing.
 
-        Trait:
+        Scope:
             Any package dependencies that you might need must be explicitly stated in these requirements.  If you need to use a dependency that is not listed here then ask for approval or use a different approach.
 
     Embed: test/embed-1/include.m6r
 
-    Trait: Rendering
+    Scope: Rendering
 
-        Trait:
+        Scope:
             Once the directory structure is in place and all old index.html files have been deleted, render all the pages.
 
-        Trait:
+        Scope:
             The tool should parallelize rendering operations.
 
-    Trait: Retry Mechanism
+    Scope: Retry Mechanism
 
-        Trait:
+        Scope:
             Implement a retry mechanism for failed render attempts with a default of 3 retries.
 
-        Trait:
+        Scope:
             The retry mechanism should be applied to invocations of puppeteer as well as for network failures.
 
-        Trait:
+        Scope:
             Allow this to be configurable with the --max-retries parameter.
 
-        Trait:
+        Scope:
             If a failure occurs, wait one second before attempting the retry.
 
-        Trait:
+        Scope:
             The tool should exit with an error status if any page fails to render after retries.
 

@@ -13,7 +13,7 @@ enum class TokenType {
     KEYWORD_TEXT,
     TEXT,
     PRODUCT,
-    TRAIT,
+    SCOPE,
     EXAMPLE,
     BAD_INDENT,
     BAD_OUTDENT,

@@ -2,13 +2,10 @@ Product:
     Build a compiler to process files written in a language, Metaphor, allowing them to be used to drive a dialogue
     with an LLM.
 
-    Trait:
-        As a software product designer, I want to describe the intent of a software product to an LLM,
-        so it can help me build and refine the software components.
+    As a software product designer, I want to describe the intent of a software product to an LLM,
+    so it can help me build and refine the software components.
 
-    Trait:
-        Previous version.
-
+    Scope: Previous version
         An implementation of the current compiler is provided here.  It may not accurately reflect the
         requirements stated previously, in which case it will need to be modified to support them.
 
