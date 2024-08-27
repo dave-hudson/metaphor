@@ -29,6 +29,16 @@ void simplifyText(ASTNode& node) {
             continue;
         }
 
+        // If we're not processing a formatted text block then any blank lines we encounter here
+        // can just be eaten!
+        if (!inFormatedSection) {
+            if (child->value_.length() == 0) {
+                node.childNodes_.erase(node.childNodes_.begin() + i);
+                i++;
+                continue;
+            }
+        }
+
         // We have a text node.  If we don't have a sibling then we can't look to merge anything.
         if (i == node.childNodes_.size() - 1) {
             i++;
@@ -64,14 +74,14 @@ void simplifyText(ASTNode& node) {
             continue;
         }
 
-
+        // If we're in a formatted text section then apply a newline and merge these two elements.
         if (inFormatedSection) {
             child->value_ += "\n" + sibling->value_;
             node.childNodes_.erase(node.childNodes_.begin() + i + 1);
             continue;
         }
 
-        // If our next text is an empty line then erase it, but move on from this block.
+        // If our next text is an empty line then this indicates the end of a paragraph.
         if (sibling->value_.length() == 0) {
             node.childNodes_.erase(node.childNodes_.begin() + i + 1);
             i++;
@@ -86,7 +96,7 @@ void simplifyText(ASTNode& node) {
 void recurse(const ASTNode& node, std::string section, std::ostream& out) {
     switch (node.tokenType_) {
     case TokenType::TEXT:
-        out << node.value_ << std::endl;
+        out << node.value_ << std::endl << std::endl;
         return;
 
     case TokenType::PRODUCT:
@@ -95,12 +105,12 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
         if (node.childNodes_.size()) {
             const auto& childToken = node.childNodes_[0];
             if (childToken->tokenType_ == TokenType::KEYWORD_TEXT) {
-                out << section << " " << childToken->value_ << std::endl;
+                out << section << " " << childToken->value_ << std::endl << std::endl;
                 break;
             }
         }
 
-        out << section << std::endl;
+        out << section << std::endl << std::endl;
         break;
 
     default:
