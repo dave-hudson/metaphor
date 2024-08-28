@@ -1,5 +1,5 @@
 #include "Parser.hpp"
-#include "CodeLexer.hpp"
+#include "EmbedLexer.hpp"
 #include "MetaphorLexer.hpp"
 
 Parser::Parser() :
@@ -21,12 +21,12 @@ auto Parser::getNextToken() -> Token {
             indentLevel_--;
             return currentToken_;
 
-        case TokenType::EMBED:
-            parseEmbed();
+        case TokenType::INJECT:
+            parseInject();
             break;
 
-        case TokenType::CODE:
-            parseCode();
+        case TokenType::EMBED:
+            parseEmbed();
             break;
 
         case TokenType::END_OF_FILE:
@@ -67,10 +67,10 @@ auto Parser::loadFile(const std::string& filename) -> void {
     processedFiles_.insert(canonicalFilename);
 }
 
-auto Parser::parseEmbed() -> void {
+auto Parser::parseInject() -> void {
     const auto& token = getNextToken();
     if (token.type != TokenType::KEYWORD_TEXT) {
-        raiseSyntaxError(token, "Expected file name in 'Embed'");
+        raiseSyntaxError(token, "Expected file name for 'Inject'");
     }
 
     std::string filename = token.value;
@@ -78,15 +78,15 @@ auto Parser::parseEmbed() -> void {
     lexers_.push_back(std::make_unique<MetaphorLexer>(filename));
 }
 
-auto Parser::parseCode() -> void {
+auto Parser::parseEmbed() -> void {
     const auto& token = getNextToken();
     if (token.type != TokenType::KEYWORD_TEXT) {
-        raiseSyntaxError(token, "Expected file name in 'Code'");
+        raiseSyntaxError(token, "Expected file name for 'Embed'");
     }
 
     std::string filename = token.value;
     loadFile(filename);
-    lexers_.push_back(std::make_unique<CodeLexer>(filename));
+    lexers_.push_back(std::make_unique<EmbedLexer>(filename));
 }
 
 auto Parser::parseKeywordText(const Token& keywordTextToken) -> std::unique_ptr<ASTNode> {
@@ -97,12 +97,12 @@ auto Parser::parseText(const Token& textToken) -> std::unique_ptr<ASTNode> {
     return std::make_unique<ASTNode>(textToken);
 }
 
-auto Parser::parseProduct(const Token& defineToken) -> std::unique_ptr<ASTNode> {
-    auto defineNode = std::make_unique<ASTNode>(defineToken);
+auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
+    auto targetNode = std::make_unique<ASTNode>(targetToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::KEYWORD_TEXT) {
-        defineNode->addChild(parseKeywordText(initToken));
+        targetNode->addChild(parseKeywordText(initToken));
         const auto& indentToken = getNextToken();
         if (indentToken.type != TokenType::INDENT) {
             raiseSyntaxError(indentToken, "Expected indent for 'Product' block");
@@ -122,11 +122,11 @@ auto Parser::parseProduct(const Token& defineToken) -> std::unique_ptr<ASTNode> 
                 raiseSyntaxError(token, "Text must come first in a 'Product' block");
             }
 
-            defineNode->addChild(parseText(token));
+            targetNode->addChild(parseText(token));
             break;
 
         case TokenType::SCOPE:
-            defineNode->addChild(parseScope(token));
+            targetNode->addChild(parseScope(token));
             seenTokenType = TokenType::SCOPE;
             break;
 
@@ -136,7 +136,7 @@ auto Parser::parseProduct(const Token& defineToken) -> std::unique_ptr<ASTNode> 
                 break;
             }
 
-            return defineNode;
+            return targetNode;
 
         default:
             raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Product' block");
@@ -247,15 +247,15 @@ auto Parser::parse(const std::string& initial_file) -> bool {
     lexers_.push_back(std::make_unique<MetaphorLexer>(initial_file));
 
     const auto& token = getNextToken();
-    if (token.type != TokenType::PRODUCT) {
-        raiseSyntaxError(token, "Expected 'Product' keyword");
+    if (token.type != TokenType::TARGET) {
+        raiseSyntaxError(token, "Expected 'Target' keyword");
     }
 
-    syntaxTree_ = parseProduct(token);
+    syntaxTree_ = parseTarget(token);
 
     const auto& tokenNext = getNextToken();
     if (tokenNext.type != TokenType::END_OF_FILE) {
-        raiseSyntaxError(tokenNext, "Unexpected text after 'Product' block");
+        raiseSyntaxError(tokenNext, "Unexpected text after 'Target' block");
     }
 
     if (parseErrors_.size() > 0) {

@@ -99,7 +99,7 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
         out << node.value_ << std::endl << std::endl;
         return;
 
-    case TokenType::PRODUCT:
+    case TokenType::TARGET:
     case TokenType::SCOPE:
     case TokenType::EXAMPLE:
         if (node.childNodes_.size()) {

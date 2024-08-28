@@ -172,4 +172,4 @@ Product: Test runner
         An implementation of the test runner is provided here.  It may not accurately reflect the
         requirements stated previously, in which case it will need to be modified to support them.
 
-        Code: src/testrun/testrun.py
+        Embed: src/testrun/testrun.py

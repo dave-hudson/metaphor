@@ -9,15 +9,15 @@ Product:
         An implementation of the current compiler is provided here.  It may not accurately reflect the
         requirements stated previously, in which case it will need to be modified to support them.
 
-        Code: src/m6rc/Token.hpp
-        Code: src/m6rc/Lexer.hpp
-        Code: src/m6rc/Lexer.cpp
-        Code: src/m6rc/CodeLexer.hpp
-        Code: src/m6rc/CodeLexer.cpp
-        Code: src/m6rc/MetaphorLexer.hpp
-        Code: src/m6rc/MetaphorLexer.cpp
-        Code: src/m6rc/Parser.hpp
-        Code: src/m6rc/Parser.cpp
-        Code: src/m6rc/ASTNode.hpp
-        Code: src/m6rc/ASTNode.cpp
-        Code: src/m6rc/m6rc.cpp
+        Embed: src/m6rc/Token.hpp
+        Embed: src/m6rc/Lexer.hpp
+        Embed: src/m6rc/Lexer.cpp
+        Embed: src/m6rc/CodeLexer.hpp
+        Embed: src/m6rc/CodeLexer.cpp
+        Embed: src/m6rc/MetaphorLexer.hpp
+        Embed: src/m6rc/MetaphorLexer.cpp
+        Embed: src/m6rc/Parser.hpp
+        Embed: src/m6rc/Parser.cpp
+        Embed: src/m6rc/ASTNode.hpp
+        Embed: src/m6rc/ASTNode.cpp
+        Embed: src/m6rc/m6rc.cpp

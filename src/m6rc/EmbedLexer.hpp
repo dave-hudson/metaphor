@@ -1,13 +1,13 @@
-#ifndef __CODELEXER_HPP
-#define __CODELEXER_HPP
+#ifndef __EMBEDLEXER_HPP
+#define __EMBEDLEXER_HPP
 
 #include <string>
 
 #include "Lexer.hpp"
 
-class CodeLexer : public Lexer {
+class EmbedLexer : public Lexer {
 public:
-    CodeLexer(const std::string& filename);
+    EmbedLexer(const std::string& filename);
 
     auto getNextToken() -> Token;
 
@@ -21,4 +21,4 @@ private:
     bool emitEndOfFile_;                // Should we emit an end of file token?
 };
 
-#endif // __CODELEXER_HPP
+#endif // __EMBEDLEXER_HPP

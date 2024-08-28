@@ -1,4 +1,4 @@
-Product:
+Target:
     I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
     Scope:
@@ -9,8 +9,8 @@ Product:
         Scope:
             Include a -h parameter to display a help message with all valid parameters and their usage.
 
-        Embed: test/bad-include-1/include.m6r
-        Embed: test/bad-include-1/include.m6r
+        Inject: test/bad-include-1/include.m6r
+        Inject: test/bad-include-1/include.m6r
 
         Scope:
             Code quality
