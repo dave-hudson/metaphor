@@ -1,4 +1,4 @@
-Product:
+Target:
     Build a compiler to process files written in a language, Metaphor, allowing them to be used to drive a dialogue
     with an LLM.
 
@@ -12,8 +12,8 @@ Product:
         Embed: src/m6rc/Token.hpp
         Embed: src/m6rc/Lexer.hpp
         Embed: src/m6rc/Lexer.cpp
-        Embed: src/m6rc/CodeLexer.hpp
-        Embed: src/m6rc/CodeLexer.cpp
+        Embed: src/m6rc/EmbedLexer.hpp
+        Embed: src/m6rc/EmbedLexer.cpp
         Embed: src/m6rc/MetaphorLexer.hpp
         Embed: src/m6rc/MetaphorLexer.cpp
         Embed: src/m6rc/Parser.hpp
