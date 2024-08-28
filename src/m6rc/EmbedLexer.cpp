@@ -65,6 +65,7 @@ auto EmbedLexer::getLanguageFromFilename() -> std::string {
         {".lua", "lua"},
         {".m6r", "metaphor"},
         {".m", "objectivec"},
+        {".md", "markdown"},
         {".mm", "objectivec"},
         {".php", "php"},
         {".pl", "perl"},
