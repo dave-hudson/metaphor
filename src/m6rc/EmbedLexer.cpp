@@ -50,6 +50,7 @@ auto EmbedLexer::getLanguageFromFilename() -> std::string {
         {".cs", "csharp"},
         {".css", "css"},
         {".dart", "dart"},
+        {".ebnf", "ebnf"},
         {".erl", "erlang"},
         {".ex", "elixir"},
         {".hpp", "cpp"},
