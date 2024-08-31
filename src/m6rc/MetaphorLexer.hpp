@@ -13,7 +13,7 @@ public:
 
 private:
     auto lexTokens() -> void;
-    auto processIndentation() -> void;
+    auto processIndentation(size_t column) -> void;
     auto consumeWhitespace() -> void;
     auto readKeywordOrText() -> Token;
 

@@ -27,7 +27,6 @@ protected:
     int currentLine_;                   // Current line number being processed (starting at 1)
     int currentColumn_;                 // Current column number being processed (starting at 1)
     bool seenNonWhitespaceCharacters_;  // Have we seen any non-whitespace characters on this line so far?
-    Token currentToken_;                // Current token we're processing
     size_t nextToken_;                  // Index of the next token to read
 };
 

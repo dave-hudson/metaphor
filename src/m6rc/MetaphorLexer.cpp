@@ -15,29 +15,29 @@ MetaphorLexer::MetaphorLexer(const std::string& filename) :
     lexTokens();
 }
 
-auto MetaphorLexer::processIndentation() -> void {
+auto MetaphorLexer::processIndentation(size_t column) -> void {
     while (indentOffset_) {
         if ((indentOffset_ % INDENT_SPACES) == 0) {
             if (indentOffset_ >= INDENT_SPACES) {
                 indentOffset_ -= INDENT_SPACES;
                 indentColumn_ += INDENT_SPACES;
-                tokens_.push_back(Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentToken_.column));
+                tokens_.push_back(Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, column));
                 continue;
             }
 
             indentOffset_ += INDENT_SPACES;
             indentColumn_ -= INDENT_SPACES;
-            tokens_.push_back(Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentToken_.column));
+            tokens_.push_back(Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, column));
             continue;
         }
 
         if (indentOffset_ > 0) {
             indentOffset_ = 0;
-            tokens_.push_back(Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentToken_.column));
+            tokens_.push_back(Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, column));
         }
 
         indentOffset_ = 0;
-        tokens_.push_back(Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentToken_.column));
+        tokens_.push_back(Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, column));
     }
 }
 
@@ -118,12 +118,11 @@ auto MetaphorLexer::lexTokens() -> void {
         }
 
         auto token = readKeywordOrText();
-        currentToken_ = token;
         seenNonWhitespaceCharacters_ = true;
 
         if (processingIndent_) {
             indentOffset_ = token.column - indentColumn_;
-            processIndentation();
+            processIndentation(token.column);
             processingIndent_ = false;
         }
 
