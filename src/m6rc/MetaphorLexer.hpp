@@ -10,10 +10,10 @@ class MetaphorLexer : public Lexer {
 public:
     MetaphorLexer(const std::string& filename);
 
-    auto getNextToken() -> Token;
 
 private:
-    auto processIndentation() -> Token;
+    auto lexTokens() -> void;
+    auto processIndentation() -> void;
     auto consumeWhitespace() -> void;
     auto readKeywordOrText() -> Token;
 

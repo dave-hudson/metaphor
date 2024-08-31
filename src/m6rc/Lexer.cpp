@@ -14,7 +14,8 @@ Lexer::Lexer(const std::string& filename) :
         currentLine_(1),
         currentColumn_(1),
         seenNonWhitespaceCharacters_(false),
-        currentToken_(TokenType::END_OF_FILE, "", "", "", 0, 0) {
+        currentToken_(TokenType::END_OF_FILE, "", "", "", 0, 0),
+        nextToken_(0) {
     if (!std::filesystem::exists(filename)) {
         throw std::runtime_error("File not found: " + filename);
     }
@@ -57,4 +58,9 @@ auto Lexer::consumeNewline() -> void {
     position_++;
     currentLine_++;
     currentColumn_ = 1;
+}
+
+auto Lexer::getNextToken() -> Token {
+    auto token = tokens_[nextToken_++];
+    return token;
 }

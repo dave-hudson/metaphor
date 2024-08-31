@@ -12,40 +12,33 @@ MetaphorLexer::MetaphorLexer(const std::string& filename) :
         processingIndent_(false),
         indentOffset_(0),
         inTextBlock_(false) {
-    updateEndOfLine();
-
-    if (!std::filesystem::exists(filename)) {
-        throw std::runtime_error("File not found: " + filename);
-    }
-
-    std::ifstream file(filename);
-    if (!file.is_open()) {
-        throw std::runtime_error("Could not open file: " + filename);
-    }
-
-    input_.assign((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    lexTokens();
 }
 
-auto MetaphorLexer::processIndentation() -> Token {
-    if ((indentOffset_ % INDENT_SPACES) == 0) {
-        if (indentOffset_ >= INDENT_SPACES) {
-            indentOffset_ -= INDENT_SPACES;
-            indentColumn_ += INDENT_SPACES;
-            return Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentToken_.column);
+auto MetaphorLexer::processIndentation() -> void {
+    while (indentOffset_) {
+        if ((indentOffset_ % INDENT_SPACES) == 0) {
+            if (indentOffset_ >= INDENT_SPACES) {
+                indentOffset_ -= INDENT_SPACES;
+                indentColumn_ += INDENT_SPACES;
+                tokens_.push_back(Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, currentToken_.column));
+                continue;
+            }
+
+            indentOffset_ += INDENT_SPACES;
+            indentColumn_ -= INDENT_SPACES;
+            tokens_.push_back(Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentToken_.column));
+            continue;
         }
 
-        indentOffset_ += INDENT_SPACES;
-        indentColumn_ -= INDENT_SPACES;
-        return Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, currentToken_.column);
-    }
+        if (indentOffset_ > 0) {
+            indentOffset_ = 0;
+            tokens_.push_back(Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentToken_.column));
+        }
 
-    if (indentOffset_ > 0) {
         indentOffset_ = 0;
-        return Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, currentToken_.column);
+        tokens_.push_back(Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentToken_.column));
     }
-
-    indentOffset_ = 0;
-    return Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, currentToken_.column);
 }
 
 auto MetaphorLexer::consumeWhitespace() -> void {
@@ -70,7 +63,6 @@ auto MetaphorLexer::readKeywordOrText() -> Token {
     if (keyword_map.find(word) != keyword_map.end()) {
         // Once we've seen a keyword, we're no longer in a text block.
         inTextBlock_ = false;
-        seenNonWhitespaceCharacters_ = true;
         return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
     }
 
@@ -90,30 +82,13 @@ auto MetaphorLexer::readKeywordOrText() -> Token {
     }
 
     inTextBlock_ = true;
-    seenNonWhitespaceCharacters_ = true;
     position_ = endOfLine_;
     return Token(TokenType::TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn);
 }
 
-auto MetaphorLexer::getNextToken() -> Token {
-    // Are we doing any indentation changes?  If yes then ensure we emit the correct
-    // stream of tokens before the last actual token we saw.
-    if (processingIndent_) {
-        if (indentOffset_) {
-            return processIndentation();
-        }
-
-        processingIndent_ = false;
-        return currentToken_;
-    }
-
+auto MetaphorLexer::lexTokens() -> void {
     // Get the next token.
-    while (true) {
-        if (position_ >= input_.size()) {
-            currentToken_ = Token(TokenType::END_OF_FILE, "", line_, filename_, currentLine_, 1);
-            break;
-        }
-
+    while (position_ < input_.size()) {
         char ch = input_[position_];
 
         // If we have a new line then get the next one.
@@ -121,9 +96,7 @@ auto MetaphorLexer::getNextToken() -> Token {
             // If we've not seen any non-whitespace characters and we're in a text block then emit a blank
             // line.  Then pretend we saw characters so next time we process the end of line.
             if (!seenNonWhitespaceCharacters_ && inTextBlock_) {
-                seenNonWhitespaceCharacters_ = true;
-                currentToken_ = Token(TokenType::TEXT, "", line_, filename_, currentLine_, indentColumn_);
-                break;
+                tokens_.push_back(Token(TokenType::TEXT, "", line_, filename_, currentLine_, indentColumn_));
             }
 
             processingIndent_ = true;
@@ -144,19 +117,18 @@ auto MetaphorLexer::getNextToken() -> Token {
             continue;
         }
 
-        currentToken_ = readKeywordOrText();
-        break;
-    }
+        auto token = readKeywordOrText();
+        currentToken_ = token;
+        seenNonWhitespaceCharacters_ = true;
 
-    // If our new token is preceded by indentation then process that first!
-    if (processingIndent_) {
-        indentOffset_ = currentToken_.column - indentColumn_;
-        if (indentOffset_) {
-            return processIndentation();
+        if (processingIndent_) {
+            indentOffset_ = token.column - indentColumn_;
+            processIndentation();
+            processingIndent_ = false;
         }
 
-        processingIndent_ = false;
+        tokens_.push_back(token);
     }
 
-    return currentToken_;
+    tokens_.push_back(Token(TokenType::END_OF_FILE, "", line_, filename_, currentLine_, 1));
 }

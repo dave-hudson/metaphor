@@ -111,7 +111,6 @@ auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
         raiseSyntaxError(initToken, "Expected description or indent for 'Product' block");
     }
 
-    auto blockIndentLevel = indentLevel_;
     auto seenTokenType = TokenType::NONE;
 
     while (true) {
@@ -132,10 +131,6 @@ auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            if (indentLevel_ >= blockIndentLevel) {
-                break;
-            }
-
             return targetNode;
 
         default:
@@ -158,7 +153,6 @@ auto Parser::parseScope(const Token& scopeToken) -> std::unique_ptr<ASTNode> {
         raiseSyntaxError(initToken, "Expected description or indent for 'Scope' block");
     }
 
-    auto blockIndentLevel = indentLevel_;
     auto seenTokenType = TokenType::NONE;
 
     while (true) {
@@ -184,10 +178,6 @@ auto Parser::parseScope(const Token& scopeToken) -> std::unique_ptr<ASTNode> {
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            if (indentLevel_ >= blockIndentLevel) {
-                break;
-            }
-
             return scopeNode;
 
         default:
@@ -210,7 +200,6 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
         raiseSyntaxError(initToken, "Expected description or indent for 'Example' block");
     }
 
-    auto blockIndentLevel = indentLevel_;
     auto seenTokenType = TokenType::NONE;
 
     while (true) {
@@ -226,10 +215,6 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            if (indentLevel_ >= blockIndentLevel) {
-                break;
-            }
-
             return exampleNode;
 
         default:

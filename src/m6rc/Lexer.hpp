@@ -2,6 +2,7 @@
 #define __LEXER_HPP
 
 #include <string>
+#include <vector>
 
 #include "Token.hpp"
 
@@ -10,7 +11,7 @@ public:
     Lexer(const std::string& filename);
     virtual ~Lexer() = default;
 
-    virtual auto getNextToken() -> Token = 0;
+    auto getNextToken() -> Token;
 
 protected:
     auto updateEndOfLine() -> void;
@@ -19,6 +20,7 @@ protected:
     std::string filename_;              // File we're lexing
     std::string input_;                 // Content being lexed
     std::string line_;                  // Line curently being lexed
+    std::vector<Token> tokens_;         // All the tokens in the file
     size_t position_;                   // Offset of the current character being lexed
     size_t startOfLine_;                // Offset of the first character of the current line being lexed
     size_t endOfLine_;                  // Offset of the last character of the current line being lexed
@@ -26,6 +28,7 @@ protected:
     int currentColumn_;                 // Current column number being processed (starting at 1)
     bool seenNonWhitespaceCharacters_;  // Have we seen any non-whitespace characters on this line so far?
     Token currentToken_;                // Current token we're processing
+    size_t nextToken_;                  // Index of the next token to read
 };
 
 #endif // __LEXER_HPP
