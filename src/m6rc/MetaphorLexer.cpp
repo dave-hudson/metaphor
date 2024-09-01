@@ -16,28 +16,36 @@ MetaphorLexer::MetaphorLexer(const std::string& filename) :
 }
 
 auto MetaphorLexer::processIndentation(size_t column) -> void {
-    while (indentOffset_) {
-        if ((indentOffset_ % INDENT_SPACES) == 0) {
-            if (indentOffset_ >= INDENT_SPACES) {
-                indentOffset_ -= INDENT_SPACES;
-                indentColumn_ += INDENT_SPACES;
-                tokens_.push_back(Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, column));
-                continue;
-            }
+    if (!indentOffset_) {
+        return;
+    }
 
-            indentOffset_ += INDENT_SPACES;
-            indentColumn_ -= INDENT_SPACES;
-            tokens_.push_back(Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, column));
-            continue;
-        }
-
+    if ((indentOffset_ % INDENT_SPACES) != 0) {
         if (indentOffset_ > 0) {
             indentOffset_ = 0;
             tokens_.push_back(Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, column));
+            return;
         }
 
         indentOffset_ = 0;
         tokens_.push_back(Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, column));
+        return;
+    }
+
+    if (indentOffset_ >= INDENT_SPACES) {
+        while (indentOffset_) {
+            indentOffset_ -= INDENT_SPACES;
+            indentColumn_ += INDENT_SPACES;
+            tokens_.push_back(Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, column));
+        }
+
+        return;
+    }
+
+    while (indentOffset_) {
+        indentOffset_ += INDENT_SPACES;
+        indentColumn_ -= INDENT_SPACES;
+        tokens_.push_back(Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, column));
     }
 }
 
