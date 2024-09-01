@@ -32,10 +32,10 @@ auto MetaphorLexer::processIndentation(size_t column) -> void {
         return;
     }
 
+    indentColumn_ += indentOffset_;
     if (indentOffset_ >= INDENT_SPACES) {
         while (indentOffset_) {
             indentOffset_ -= INDENT_SPACES;
-            indentColumn_ += INDENT_SPACES;
             tokens_.push_back(Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, column));
         }
 
@@ -44,7 +44,6 @@ auto MetaphorLexer::processIndentation(size_t column) -> void {
 
     while (indentOffset_) {
         indentOffset_ += INDENT_SPACES;
-        indentColumn_ -= INDENT_SPACES;
         tokens_.push_back(Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, column));
     }
 }
