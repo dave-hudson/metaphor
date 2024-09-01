@@ -2,25 +2,15 @@
 #include "EmbedLexer.hpp"
 #include "MetaphorLexer.hpp"
 
-Parser::Parser() :
-        currentToken_(TokenType::NONE, "", "", "", 0, 0),
-        indentLevel_(0) {
+Parser::Parser() {
 }
 
 auto Parser::getNextToken() -> Token {
     while (!lexers_.empty()) {
         auto& lexer = lexers_.back();
-        currentToken_ = lexer->getNextToken();
+        auto token = lexer->getNextToken();
 
-        switch (currentToken_.type) {
-        case TokenType::INDENT:
-            indentLevel_++;
-            return currentToken_;
-
-        case TokenType::OUTDENT:
-            indentLevel_--;
-            return currentToken_;
-
+        switch (token.type) {
         case TokenType::INJECT:
             parseInject();
             break;
@@ -34,7 +24,7 @@ auto Parser::getNextToken() -> Token {
             break;
 
         default:
-            return currentToken_;
+            return token;
         }
     }
 

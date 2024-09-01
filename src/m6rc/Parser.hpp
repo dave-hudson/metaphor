@@ -32,11 +32,9 @@ private:
 
     std::vector<std::unique_ptr<Lexer>> lexers_;
                                         // A vector of lexers currently being used for different files.
-    Token currentToken_;
     std::set<std::filesystem::path> processedFiles_;
                                         // A set of files that have already been included so we can avoid recursion.
     std::unique_ptr<ASTNode> syntaxTree_;
-    int indentLevel_;                   // Indent level withing the current file
     std::vector<std::string> parseErrors_;
 };
 
