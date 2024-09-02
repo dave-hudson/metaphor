@@ -83,7 +83,7 @@ auto EmbedLexer::lexTokens() -> void {
 
         // If we have a new line then get the next one.
         if (ch == '\n') {
-            // If we've not seen any non-whitespace characters and we're in a text block then emit a blank line.
+            // If we've not seen any non-whitespace characters then emit a blank line.
             if (!seenNonWhitespaceCharacters_) {
                 seenNonWhitespaceCharacters_ = true;
                 tokens_.push_back(Token(TokenType::TEXT, "", line_, filename_, currentLine_, 1));
