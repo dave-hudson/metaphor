@@ -55,10 +55,15 @@ auto MetaphorLexer::consumeWhitespace() -> void {
     }
 }
 
-auto MetaphorLexer::readKeywordOrText() -> Token {
+auto MetaphorLexer::readKeywordOrText() -> void {
     int startColumn = currentColumn_;
-    size_t startPosition = position_;
+    if (processingIndent_) {
+        indentOffset_ = startColumn - indentColumn_;
+        processIndentation(startColumn);
+        processingIndent_ = false;
+    }
 
+    size_t startPosition = position_;
     while (position_ < input_.size() && !isspace(input_[position_]) && input_[position_] != '\n') {
         position_++;
         currentColumn_++;
@@ -70,13 +75,15 @@ auto MetaphorLexer::readKeywordOrText() -> Token {
     if (keyword_map.find(word) != keyword_map.end()) {
         // Once we've seen a keyword, we're no longer in a text block.
         inTextBlock_ = false;
-        return Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn);
+        tokens_.push_back(Token(keyword_map.at(word), word, line_, filename_, currentLine_, startColumn));
+        return;
     }
 
     // Have we already seen a keyword?  If yes then this is keyword text
     if (seenNonWhitespaceCharacters_) {
         position_ = endOfLine_;
-        return Token(TokenType::KEYWORD_TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn);
+        tokens_.push_back(Token(TokenType::KEYWORD_TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn));
+        return;
     }
 
     // We're dealing with text.  If we're already in a text block then we want to use the same indentation
@@ -90,7 +97,7 @@ auto MetaphorLexer::readKeywordOrText() -> Token {
 
     inTextBlock_ = true;
     position_ = endOfLine_;
-    return Token(TokenType::TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn);
+    tokens_.push_back(Token(TokenType::TEXT, line_.substr(startColumn - 1, endOfLine_ - startOfLine_ - (startColumn - 1)), line_, filename_, currentLine_, startColumn));
 }
 
 auto MetaphorLexer::lexTokens() -> void {
@@ -124,16 +131,8 @@ auto MetaphorLexer::lexTokens() -> void {
             continue;
         }
 
-        auto token = readKeywordOrText();
+        readKeywordOrText();
         seenNonWhitespaceCharacters_ = true;
-
-        if (processingIndent_) {
-            indentOffset_ = token.column - indentColumn_;
-            processIndentation(token.column);
-            processingIndent_ = false;
-        }
-
-        tokens_.push_back(token);
     }
 
     tokens_.push_back(Token(TokenType::END_OF_FILE, "", line_, filename_, currentLine_, 1));

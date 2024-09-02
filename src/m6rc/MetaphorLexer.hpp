@@ -15,7 +15,7 @@ private:
     auto lexTokens() -> void;
     auto processIndentation(size_t column) -> void;
     auto consumeWhitespace() -> void;
-    auto readKeywordOrText() -> Token;
+    auto readKeywordOrText() -> void;
 
     int indentColumn_;                  // Column number for indentation processing
     bool processingIndent_;             // Are we processing indentation at the start of a line?
