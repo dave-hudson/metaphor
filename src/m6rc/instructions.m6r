@@ -1,0 +1,15 @@
+Target: Instructions for use of metaphor
+    Please analyze the code below and write a user manual for the m6rc compiler
+
+    Embed: src/m6rc/m6rc.cpp
+    Embed: src/m6rc/Token.hpp
+    Embed: src/m6rc/ASTnode.hpp
+    Embed: src/m6rc/ASTnode.cpp
+    Embed: src/m6rc/Parser.hpp
+    Embed: src/m6rc/Parser.cpp
+    Embed: src/m6rc/Lexer.hpp
+    Embed: src/m6rc/Lexer.cpp
+    Embed: src/m6rc/EmbedLexer.hpp
+    Embed: src/m6rc/EmbedLexer.cpp
+    Embed: src/m6rc/MetaphorLexer.hpp
+    Embed: src/m6rc/MetaphorLexer.cpp
