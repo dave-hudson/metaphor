@@ -2,13 +2,47 @@
 # **User Manual for the m6rc Compiler**
 
 ## **Introduction**
-The m6rc compiler is a tool designed to parse, simplify, and process Metaphor language code. This document outlines its usage, options, and functionality. It explains how to compile a source file, generate syntax trees, and produce output files using the m6rc compiler.
+The m6rc compiler is a tool designed to parse, simplify, and process Metaphor language code. This document outlines its usage, options, and functionality. It explains how to compile source files, and produce an output file using the m6rc compiler.
 
 ---
 
-## **Command-Line Usage**
+## What is Metaphor?
 
-### **Basic Command Syntax**
+Metaphor is a declarative language designed to create Maximal Instruction Prompts (MIPs) for Large Language Models (LLMs).
+
+It follows a very simple design that captures a "Target" objective for the LLM to fulfil.  This target is supported by a
+hierarchical description of the "Scope" the LLM is being asked to use to fulfil the target.
+
+Scope elements may contain more Scope elements, or "Example" elements.  Examples give the LLM an idea of how some scope
+behaviour should be expressed.
+
+Scope elements also allow for an external file to be incorporated into the MIP via the "Embed" keyword.  This captures the
+file and the language type in a way that allows the LLM to be clear this is additional data, but not a requirement.  This
+makes it possible to write prompts target objectives that take existing files as reference data, or to provide a basis for
+additional modifications by the LLM.
+
+Finally other Metaphor files may be injected into the current one via the "Inject" keyword.  This makes it possible to
+manage large and complex scope more easily, but also to make it possible to use the same scope in conjunction with
+different targets.
+
+---
+
+## Using The Output
+
+When you have generated an output file, copy its contents to the LLM prompt.  This means the same prompt can be reused
+multiple times, in case adjustments are required, or if the LLM does something unexpected.  By using temporary chats with the
+LLM this makes things more repeatable.
+
+To check the LLM understands the prompt, try asking questions like:
+
+- Is this prompt clear and unambiguous?
+- Have you met all of the requirements?
+
+---
+
+## Command-Line Usage
+
+### Basic Command Syntax
 
 ```bash
 m6rc [options] <file>
@@ -16,7 +50,7 @@ m6rc [options] <file>
 
 Where `<file>` is the path to the input file containing Metaphor language code.
 
-### **Options**
+### Options
 
 - **`-h, --help`**: Display help and usage information.
   
@@ -26,7 +60,7 @@ Where `<file>` is the path to the input file containing Metaphor language code.
 
 ---
 
-## **Steps to Compile a File**
+## Steps to Compile a File
 
 1. **Prepare the Input File**: Ensure your file is written in Metaphor language and adheres to its syntax rules.
    
@@ -58,9 +92,9 @@ Where `<file>` is the path to the input file containing Metaphor language code.
 
 ---
 
-## **Common Use Cases**
+## Common Use Cases
 
-### **Generating an Output File**
+### Generating an Output File
 
 To compile `example.m6r` and write the output to `result.txt`:
 
@@ -68,7 +102,7 @@ To compile `example.m6r` and write the output to `result.txt`:
 m6rc -o result.txt example.m6r
 ```
 
-### **Running in Debug Mode**
+### Running in Debug Mode
 
 To compile `example.m6r` with debug output:
 
@@ -78,7 +112,7 @@ m6rc -d example.m6r
 
 This will print diagnostic messages to `stderr`.
 
-### **Displaying Help**
+### Displaying Help
 
 To show the help message with usage instructions:
 
@@ -88,7 +122,7 @@ m6rc --help
 
 ---
 
-## **Error Messages**
+## Error Messages
 
 The compiler provides clear and detailed error messages if issues are detected during the parsing process. Errors typically include:
 - Line number
@@ -99,16 +133,3 @@ For example:
 ```
 Syntax error: Expected 'Target' keyword at line 10, column 5, file example.m6r
 ```
-
----
-
-## **Using The Output**
-
-When you have generated an output file, copy its contents to the LLM prompt.  This means the same prompt can be reused
-multiple times, in case adjustments are required, or if the LLM does something unexpected.  By using temporary chats with the
-LLM this makes things more repeatable.
-
-To check the LLM understands the prompt, try asking questions like:
-
-- Is this prompt clear and unambiguous?
-- Have you met all of the requirements?
