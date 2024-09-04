@@ -4,8 +4,6 @@
 ## **Introduction**
 The m6rc compiler is a tool designed to parse, simplify, and process Metaphor language code. This document outlines its usage, options, and functionality. It explains how to compile source files, and produce an output file using the m6rc compiler.
 
----
-
 ## What is Metaphor?
 
 Metaphor is a declarative language designed to create Maximal Instruction Prompts (MIPs) for Large Language Models (LLMs).
@@ -25,8 +23,6 @@ Finally other Metaphor files may be injected into the current one via the "Injec
 manage large and complex scope more easily, but also to make it possible to use the same scope in conjunction with
 different targets.
 
----
-
 ## Using The Output
 
 When you have generated an output file, copy its contents to the LLM prompt.  This means the same prompt can be reused
@@ -37,8 +33,6 @@ To check the LLM understands the prompt, try asking questions like:
 
 - Is this prompt clear and unambiguous?
 - Have you met all of the requirements?
-
----
 
 ## Command-Line Usage
 
@@ -57,8 +51,6 @@ Where `<file>` is the path to the input file containing Metaphor language code.
 - **`-o, --outputFile <file>`**: Specify the output file where the compiler should write its results. If this option is not provided, the output is printed to the console.
 
 - **`-d, --debug`**: Enable debug mode, which prints additional diagnostic information about the parsing process to `stderr`.
-
----
 
 ## Steps to Compile a File
 
@@ -90,8 +82,6 @@ Where `<file>` is the path to the input file containing Metaphor language code.
 
    In debug mode, additional information about each token processed is printed to `stderr`.
 
----
-
 ## Common Use Cases
 
 ### Generating an Output File
@@ -119,8 +109,6 @@ To show the help message with usage instructions:
 ```bash
 m6rc --help
 ```
-
----
 
 ## Error Messages
 
