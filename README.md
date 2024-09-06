@@ -1,27 +1,48 @@
-
 # **User Manual for the m6rc Compiler**
 
 ## **Introduction**
-The m6rc compiler is a tool designed to parse, simplify, and process Metaphor language code. This document outlines its usage, options, and functionality. It explains how to compile source files, and produce an output file using the m6rc compiler.
+The m6rc compiler is a tool designed to parse, simplify, and process Metaphor language code.  This document outlines
+its usage, options, and functionality.  It explains how to compile source files, and produce an output file using the
+m6rc compiler.
 
 ## What is Metaphor?
 
-Metaphor is a declarative language designed to create Maximal Instruction Prompts (MIPs) for Large Language Models (LLMs).
+Metaphor is a simple declarative language designed to create Maximal Instruction Prompts (MIPs) for Large Language
+Models (LLMs).
 
-It follows a very simple design that captures a "Target" objective for the LLM to fulfil.  This target is supported by a
-hierarchical description of the "Scope" the LLM is being asked to use to fulfil the target.
+Metaphor follows a very simple design that captures a target objective for the LLM to fulfil.  This target is supported by a
+hierarchical description of the scope the LLM is being asked to use to fulfil the target.
 
-Scope elements may contain more Scope elements, or "Example" elements.  Examples give the LLM an idea of how some scope
-behaviour should be expressed.
+The design is natural language based but this use of natural language is slightly constrained by some keywords so m6rc can
+construct more effective MIP prompts.
 
-Scope elements also allow for an external file to be incorporated into the MIP via the "Embed" keyword.  This captures the
-file and the language type in a way that allows the LLM to be clear this is additional data, but not a requirement.  This
-makes it possible to write prompts target objectives that take existing files as reference data, or to provide a basis for
-additional modifications by the LLM.
+This approach has many advantages:
 
-Finally other Metaphor files may be injected into the current one via the "Inject" keyword.  This makes it possible to
-manage large and complex scope more easily, but also to make it possible to use the same scope in conjunction with
-different targets.
+- We can iterate from a simple description to a more complex one over time.
+- When using this to build software, we can use this approach to quickly build new versions, allowing for us to try out new
+  ideas very rapidly.
+- This approach captures the "memory" of what we're trying to achieve in the prompt as opposed to in an interactive dialogue
+  with an LLM.  This means we can use the same approach with different LLMs, and can take advantage of "temporary" sessions
+  with an LLM so that we don't contaminate the LLM's output based on previous experiments that may not have been fully
+  successful.
+
+### Syntax
+
+Metaphor (m6r) files follow a very simple document-like structure.  It has only 5 keywords:
+
+- **Target:** - defines the top-level target objective being conveyed to the LLM.  There is only one `Target:` keyword
+  in any given Metaphor input.
+- **Scope:** - a hierarchical description of the scope of the work we want the LLM to do and supporting information.
+  `Scope:` elements may nest but must only exist within the scope of a `Target:`.
+- **Example:** - defines an example of how some `Scope:` item should behave.  `Example:` can only be used within a `Scope:`.
+- **Embed:** - embeds an external file into the prompt, also indicating the language involved to the LLM.
+- **Inject:** - injects another Metaphor file into the current one, as if that one was directly part of the file being
+  procesed, but auto-indented to the current indentation level.
+
+### Indentation
+
+To avoid arguments over indentation, Metaphor supports only one valid indentation strategy.  All nested items must be
+indented by exactly 4 spaces.
 
 ## Using The Output
 
