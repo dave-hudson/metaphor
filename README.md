@@ -30,13 +30,13 @@ This approach has many advantages:
 
 Metaphor (m6r) files follow a very simple document-like structure.  It has only 5 keywords:
 
-- **Target:** - defines the top-level target objective being conveyed to the LLM.  There is only one `Target:` keyword
+- `Target:` - defines the top-level target objective being conveyed to the LLM.  There is only one `Target:` keyword
   in any given Metaphor input.
-- **Scope:** - a hierarchical description of the scope of the work we want the LLM to do and supporting information.
+- `Scope:` - a hierarchical description of the scope of the work we want the LLM to do and supporting information.
   `Scope:` elements may nest but must only exist within the scope of a `Target:`.
-- **Example:** - defines an example of how some `Scope:` item should behave.  `Example:` can only be used within a `Scope:`.
-- **Embed:** - embeds an external file into the prompt, also indicating the language involved to the LLM.
-- **Inject:** - injects another Metaphor file into the current one, as if that one was directly part of the file being
+- `Example:` - defines an example of how some `Scope:` item should behave.  `Example:` can only be used within a `Scope:`.
+- `Embed:` - embeds an external file into the prompt, also indicating the language involved to the LLM.
+- `Inject:` - injects another Metaphor file into the current one, as if that one was directly part of the file being
   procesed, but auto-indented to the current indentation level.
 
 ### Indentation
