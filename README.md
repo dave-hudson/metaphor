@@ -134,11 +134,12 @@ m6rc --help
 ## Error Messages
 
 The compiler provides clear and detailed error messages if issues are detected during the parsing process. Errors typically include:
+- A description of the error
 - Line number
 - Column number
-- A description of the error
+- File name
 
 For example:
 ```
-Syntax error: Expected 'Target' keyword at line 10, column 5, file example.m6r
+Expected 'Target' keyword: line 10, column 5, file example.m6r
 ```
