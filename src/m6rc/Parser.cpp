@@ -11,8 +11,8 @@ auto Parser::getNextToken() -> Token {
         auto token = lexer->getNextToken();
 
         switch (token.type) {
-        case TokenType::INJECT:
-            parseInject();
+        case TokenType::INCLUDE:
+            parseInclude();
             break;
 
         case TokenType::EMBED:
@@ -57,10 +57,10 @@ auto Parser::loadFile(const std::string& filename) -> void {
     processedFiles_.insert(canonicalFilename);
 }
 
-auto Parser::parseInject() -> void {
+auto Parser::parseInclude() -> void {
     const auto& token = getNextToken();
     if (token.type != TokenType::KEYWORD_TEXT) {
-        raiseSyntaxError(token, "Expected file name for 'Inject'");
+        raiseSyntaxError(token, "Expected file name for 'Include'");
     }
 
     std::string filename = token.value;

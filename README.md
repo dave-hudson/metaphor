@@ -36,7 +36,7 @@ Metaphor (m6r) files follow a very simple document-like structure.  It has only 
   `Scope:` elements may nest but must only exist within the scope of a `Target:`.
 - `Example:` - defines an example of how some `Scope:` item should behave.  `Example:` can only be used within a `Scope:`.
 - `Embed:` - embeds an external file into the prompt, also indicating the language involved to the LLM.
-- `Inject:` - injects another Metaphor file into the current one, as if that one was directly part of the file being
+- `Include:` - includes another Metaphor file into the current one, as if that one was directly part of the file being
   procesed, but auto-indented to the current indentation level.
 
 ### Indentation

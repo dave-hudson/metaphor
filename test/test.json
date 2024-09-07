@@ -1,10 +1,10 @@
 [
     {
-        "command": "build/m6rc test/bad-inject-1/test.m6r",
+        "command": "build/m6rc test/bad-include-1/test.m6r",
         "type": "negative"
     },
     {
-        "command": "build/m6rc test/bad-inject-2/test.m6r",
+        "command": "build/m6rc test/bad-include-2/test.m6r",
         "type": "negative"
     },
     {
@@ -16,7 +16,7 @@
         "type": "negative"
     },
     {
-        "command": "build/m6rc test/inject-1/test.m6r",
+        "command": "build/m6rc test/include-1/test.m6r",
         "type": "positive"
     },
     {

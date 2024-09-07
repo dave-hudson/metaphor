@@ -22,7 +22,7 @@ private:
     auto getNextToken() -> Token;
     auto raiseSyntaxError(const Token& token, const std::string& message) -> void;
     auto loadFile(const std::string& filename) -> void;
-    auto parseInject() -> void;
+    auto parseInclude() -> void;
     auto parseEmbed() -> void;
     auto parseKeywordText(const Token& textToken) -> std::unique_ptr<ASTNode>;
     auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;

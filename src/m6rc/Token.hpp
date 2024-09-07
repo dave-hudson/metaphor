@@ -8,7 +8,7 @@ enum class TokenType {
     NONE,
     INDENT,
     OUTDENT,
-    INJECT,
+    INCLUDE,
     EMBED,
     KEYWORD_TEXT,
     TEXT,

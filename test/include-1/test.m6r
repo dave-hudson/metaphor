@@ -27,7 +27,7 @@ Target:
         Scope:
             Any package dependencies that you might need must be explicitly stated in these requirements.  If you need to use a dependency that is not listed here then ask for approval or use a different approach.
 
-    Inject: test/inject-1/include.m6r
+    Include: test/include-1/include.m6r
 
     Scope: Rendering
 
