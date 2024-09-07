@@ -19,8 +19,8 @@ construct more effective MIP prompts.
 This approach has many advantages:
 
 - We can iterate from a simple description to a more complex one over time.
-- When using this to build software, we can use this approach to quickly build new versions, allowing for us to try out new
-  ideas very rapidly.
+- When using this to build software, we can quickly iterate new versions, allowing us to try out new ideas very rapidly,
+  prior to committing to them.
 - This approach captures the "memory" of what we're trying to achieve in the prompt as opposed to in an interactive dialogue
   with an LLM.  This means we can use the same approach with different LLMs, and can take advantage of "temporary" sessions
   with an LLM so that we don't contaminate the LLM's output based on previous experiments that may not have been fully
