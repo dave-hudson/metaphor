@@ -1,4 +1,4 @@
-Product: Test runner
+Target: Test runner
     Create a test runner for the metaphor compiler
 
     Scope: Core functionality
