@@ -95,10 +95,10 @@ auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
         targetNode->addChild(parseKeywordText(initToken));
         const auto& indentToken = getNextToken();
         if (indentToken.type != TokenType::INDENT) {
-            raiseSyntaxError(indentToken, "Expected indent for 'Product' block");
+            raiseSyntaxError(indentToken, "Expected indent for 'Target' block");
         }
     } else if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError(initToken, "Expected description or indent for 'Product' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Target' block");
     }
 
     auto seenTokenType = TokenType::NONE;
@@ -108,7 +108,7 @@ auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError(token, "Text must come first in a 'Product' block");
+                raiseSyntaxError(token, "Text must come first in a 'Target' block");
             }
 
             targetNode->addChild(parseText(token));
@@ -124,7 +124,7 @@ auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
             return targetNode;
 
         default:
-            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Product' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Target' block");
         }
     }
 }
