@@ -7,3 +7,6 @@
 
 # Ignore output files
 build/*
+
+# Ignore python cache files
+**/__pycache__
