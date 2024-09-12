@@ -51,30 +51,30 @@ class ASTNode:
     Represents a node in the Abstract Syntax Tree (AST).
     
     Attributes:
-        tokenType_ (TokenType): The type of the token the node represents.
-        value_ (str): The value associated with the node.
-        line_ (int): The line number where the node is located.
-        column_ (int): The column number where the node starts.
-        childNodes_ (list): The list of child nodes for this node.
+        token_type (TokenType): The type of the token the node represents.
+        value (str): The value associated with the node.
+        line (int): The line number where the node is located.
+        column (int): The column number where the node starts.
+        child_nodes (list): The list of child nodes for this node.
     """
     def __init__(self, token):
-        self.tokenType_ = token.type
-        self.value_ = token.value
-        self.line_ = token.line
-        self.column_ = token.column
-        self.parentNode_ = None
-        self.childNodes_ = []
+        self.token_type = token.type
+        self.value = token.value
+        self.line = token.line
+        self.column = token.column
+        self.parent_node = None
+        self.child_nodes = []
 
-    def addChild(self, child):
+    def add_child(self, child):
         """Add a child node to this ASTNode."""
-        child.parentNode_ = self
-        self.childNodes_.append(child)
+        child.parent_node = self
+        self.child_nodes.append(child)
 
-    def printTree(self, level=0):
+    def print_tree(self, level=0):
         """Print the tree structure of this ASTNode for debugging."""
-        print("  " * level + self.value_)
-        for child in self.childNodes_:
-            child.printTree(level + 1)
+        print("  " * level + self.value)
+        for child in self.child_nodes:
+            child.print_tree(level + 1)
 
 
 class Lexer:
@@ -88,13 +88,12 @@ class Lexer:
         self.current_line = 1
         self.current_column = 1
         self._tokenize()
-        for i in self.tokens:
-            print(f'${i}')
 
     def _read_file(self, filename):
         """Read file content into memory."""
         if not Path(filename).exists():
             raise FileNotFoundError(f"File not found: {filename}")
+
         with open(filename, 'r') as file:
             return file.read()
 
@@ -102,6 +101,7 @@ class Lexer:
         """Return the next token from the token list."""
         if self.tokens:
             return self.tokens.pop(0)
+
         return Token(TokenType.END_OF_FILE, "", "", self.filename, self.current_line, self.current_column)
 
     def _tokenize(self):
@@ -147,7 +147,10 @@ class MetaphorLexer(Lexer):
             self.tokens.extend(tokens)
             self.current_line += 1
 
-        self._process_outdent()
+        # Handles remaining outdents as the file has ended.
+        while self.indent_column > 1:
+            self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", "", self.filename, self.current_line, self.current_column))
+            self.indent_column -= self.indent_spaces
 
     def _process_indentation(self, line):
         """Processes the indentation of the current line."""
@@ -168,6 +171,7 @@ class MetaphorLexer(Lexer):
                 while self.indent_offset > 0:
                     self.tokens.append(Token(TokenType.INDENT, "[Indent]", line, self.filename, self.current_line, self.current_column))
                     self.indent_offset -= self.indent_spaces
+
             self.indent_column = current_indent_column
 
         # Handle indentation decrease (OUTDENT)
@@ -178,13 +182,8 @@ class MetaphorLexer(Lexer):
                 while self.indent_offset < 0:
                     self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", line, self.filename, self.current_line, self.current_column))
                     self.indent_offset += self.indent_spaces
-            self.indent_column = current_indent_column
 
-    def _process_outdent(self):
-        """Handles remaining outdents when the file ends."""
-        while self.indent_column > 0:
-            self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", "", self.filename, self.current_line, self.current_column))
-            self.indent_column -= self.indent_spaces
+            self.indent_column = current_indent_column
 
     def read_keyword_or_text(self, line):
         """
@@ -219,7 +218,6 @@ class MetaphorLexer(Lexer):
         # If no keyword is found, treat the whole line as text
         text_token = Token(TokenType.TEXT, stripped_line, stripped_line, self.filename, self.current_line, self.current_column)
         tokens.append(text_token)
-
         return tokens
 
 
@@ -291,6 +289,7 @@ class Parser:
         while self.lexers:
             lexer = self.lexers[-1]
             token = lexer.get_next_token()
+            print(f"token: ", token)
 
             if token.type == TokenType.INCLUDE:
                 self.parse_include()
@@ -329,7 +328,7 @@ class Parser:
 
         init_token = self.get_next_token()
         if init_token.type == TokenType.KEYWORD_TEXT:
-            target_node.addChild(self.parse_keyword_text(init_token))
+            target_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
                 self.raise_syntax_error(token, "Expected indent after keyword description for 'Target' block")
@@ -342,9 +341,9 @@ class Parser:
                 if seen_token_type != TokenType.NONE:
                     self.raise_syntax_error(token, "Text must come first in a 'Target' block")
 
-                target_node.addChild(self.parse_text(token))
+                target_node.add_child(self.parse_text(token))
             elif token.type == TokenType.SCOPE:
-                target_node.addChild(self.parse_scope(token))
+                target_node.add_child(self.parse_scope(token))
                 seen_token_type = TokenType.SCOPE
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return target_node
@@ -364,7 +363,7 @@ class Parser:
         scope_node = ASTNode(token)
         init_token = self.get_next_token()
         if init_token.type == TokenType.KEYWORD_TEXT:
-            scope_node.addChild(self.parse_keyword_text(init_token))
+            scope_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
                 self.raise_syntax_error(token, "Expected indent after keyword description for 'Scope' block")
@@ -374,11 +373,11 @@ class Parser:
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
-                scope_node.addChild(self.parse_text(token))
+                scope_node.add_child(self.parse_text(token))
             elif token.type == TokenType.SCOPE:
-                scope_node.addChild(self.parse_scope(token))
+                scope_node.add_child(self.parse_scope(token))
             elif token.type == TokenType.EXAMPLE:
-                scope_node.addChild(self.parse_example(token))
+                scope_node.add_child(self.parse_example(token))
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return scope_node
             else:
@@ -387,23 +386,23 @@ class Parser:
     def parse_example(self, token):
         """Parse an Example block."""
         example_node = ASTNode(token)
-        token_next = self.get_next_token()
-
-        if token_next.type == TokenType.KEYWORD_TEXT:
-            example_node.addChild(self.parse_keyword_text(token_next))
+        init_token = self.get_next_token()
+        if init_token.type == TokenType.KEYWORD_TEXT:
+            example_node.add_child(self.parse_keyword_text(init_token))
+            indent_token = self.get_next_token()
+            if indent_token.type != TokenType.INDENT:
+                self.raise_syntax_error(token, "Expected indent after keyword description for 'Example' block")
+        elif init_token.type != TokenType.INDENT:
+            self.raise_syntax_error(token, "Expected description or indent for 'Example' block")
 
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
-                example_node.addChild(self.parse_text(token))
-            elif token.type == TokenType.SCOPE:
-                example_node.addChild(self.parse_scope(token))
-            elif token.type == TokenType.EXAMPLE:
-                example_node.addChild(self.parse_example(token))
+                example_node.add_child(self.parse_text(token))
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return example_node
             else:
-                self.raise_syntax_error(token, f"Unexpected token: {token.value}")
+                self.raise_syntax_error(token, f"Unexpected token: {token.value} in 'Example' block")
 
     def parse_include(self):
         """Parse an Include block and load the included file."""
@@ -438,39 +437,39 @@ def simplify_text(node):
     i = 0
     in_formatted_section = False
 
-    while i < len(node.childNodes_):
-        child = node.childNodes_[i]
+    while i < len(node.child_nodes):
+        child = node.child_nodes[i]
 
-        if child.tokenType_ != TokenType.TEXT:
+        if child.token_type != TokenType.TEXT:
             simplify_text(child)
             i += 1
             continue
 
         # Preserve blank lines (empty text nodes)
-        if not in_formatted_section and len(child.value_) == 0:
+        if not in_formatted_section and len(child.value) == 0:
             i += 1
             continue
 
-        if i == len(node.childNodes_) - 1:
+        if i == len(node.child_nodes) - 1:
             i += 1
             continue
 
-        if child.value_.startswith("```"):
+        if child.value.startswith("```"):
             in_formatted_section = not in_formatted_section
 
-        sibling = node.childNodes_[i + 1]
-        if sibling.tokenType_ != TokenType.TEXT:
+        sibling = node.child_nodes[i + 1]
+        if sibling.token_type != TokenType.TEXT:
             in_formatted_section = False
             i += 1
             continue
 
         # Merge adjacent text nodes unless a blank line separates them
-        if sibling.value_ == "":
+        if sibling.value == "":
             i += 1
             continue
 
-        child.value_ += " " + sibling.value_
-        del node.childNodes_[i + 1]
+        child.value += " " + sibling.value
+        del node.child_nodes[i + 1]
 
 
 def recurse(node, section, out):
@@ -482,23 +481,23 @@ def recurse(node, section, out):
         section (str): The section number (e.g., "1", "1.1").
         out (file): The output stream to write to.
     """
-    if node.tokenType_ == TokenType.TEXT:
-        out.write(node.value_ + '\n\n')
+    if node.token_type == TokenType.TEXT:
+        out.write(node.value + '\n\n')
         return
 
-    if node.tokenType_ in (TokenType.TARGET, TokenType.SCOPE, TokenType.EXAMPLE):
-        if node.childNodes_:
-            child = node.childNodes_[0]
-            if child.tokenType_ == TokenType.KEYWORD_TEXT:
-                out.write(f"{section} {child.value_}\n\n")
+    if node.token_type in (TokenType.TARGET, TokenType.SCOPE, TokenType.EXAMPLE):
+        if node.child_nodes:
+            child = node.child_nodes[0]
+            if child.token_type == TokenType.KEYWORD_TEXT:
+                out.write(f"{section} {child.value}\n\n")
             else:
                 out.write(f"{section}\n\n")
         else:
             out.write(f"{section}\n\n")
 
     index = 0
-    for child in node.childNodes_:
-        if child.tokenType_ in (TokenType.SCOPE, TokenType.EXAMPLE):
+    for child in node.child_nodes:
+        if child.token_type in (TokenType.SCOPE, TokenType.EXAMPLE):
             index += 1
         recurse(child, f"{section}.{index}", out)
 
