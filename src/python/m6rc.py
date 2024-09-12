@@ -3,9 +3,6 @@ import sys
 import argparse
 from pathlib import Path
 
-# TODO: highlight error positions
-# TODO: split into files
-
 class TokenType:
     """
     Enum-like class representing different types of tokens in the source file.
@@ -103,8 +100,21 @@ class Lexer:
         if not Path(filename).exists():
             raise FileNotFoundError(f"File not found: {filename}")
 
-        with open(filename, 'r', encoding='utf-8') as file:
-            return file.read()
+        try:
+            with open(filename, 'r', encoding='utf-8') as file:
+                return file.read()
+        except FileNotFoundError:
+            print(f"File not found: {filename}")
+            return
+        except PermissionError:
+            print(f"You do not have permission to access: {filename}")
+            return
+        except IsADirectoryError:
+            print(f"Is a directory: {filename}")
+            return
+        except OSError as e:
+            print(f"OS error: {e}")
+            return
 
     def get_next_token(self):
         """Return the next token from the token list."""
@@ -285,7 +295,7 @@ class Parser:
             bool: True if parsing was successful, False otherwise.
         """
         try:
-            self.load_file(filename)
+            self.check_file_not_loaded(filename)
             self.lexers.append(MetaphorLexer(filename))
             token = self.get_next_token()
 
@@ -300,7 +310,10 @@ class Parser:
                 self.raise_syntax_error(token_next, "Unexpected text after 'Target' block")
 
             return not self.parse_errors
-        except Exception as e:
+        except FileNotFoundError as e:
+            print(f"Error: {e}")
+            return False
+        except FileAlreadyUsedError as e:
             print(f"Error: {e}")
             return False
 
@@ -324,7 +337,7 @@ class Parser:
     def raise_syntax_error(self, token, message):
         """Raise a syntax error and add it to the error list."""
         caret = ""
-        for i in range(1, token.column):
+        for _ in range(1, token.column):
             caret += " "
 
         error_message = f"{message}: line {token.line}, column {token.column}, file {token.filename}\n{caret}|\n{caret}v\n{token.input}"
@@ -338,16 +351,13 @@ class Parser:
         """Return the list of syntax errors encountered."""
         return self.parse_errors
 
-    def load_file(self, filename):
-        """Load a file and push a corresponding lexer to the lexer stack."""
+    def check_file_not_loaded(self, filename):
+        """Check we have not already loaded a file."""
         canonical_filename = os.path.realpath(filename)
         if canonical_filename in self.previously_seen_files:
             raise FileAlreadyUsedError(filename)
 
         self.previously_seen_files.add(canonical_filename)
-
-        if not Path(filename).exists():
-            raise FileNotFoundError(f"File '{filename}' does not exist.")
 
     def parse_target(self, token):
         """Parse a target block and construct its AST node."""
@@ -450,7 +460,7 @@ class Parser:
             return
 
         filename = token_next.value
-        self.load_file(filename)
+        self.check_file_not_loaded(filename)
         self.lexers.append(MetaphorLexer(filename))
 
     def parse_embed(self):
@@ -461,7 +471,7 @@ class Parser:
             return
 
         filename = token_next.value
-        self.load_file(filename)
+        self.check_file_not_loaded(filename)
         self.lexers.append(EmbedLexer(filename))
 
 
@@ -601,7 +611,7 @@ def main():
     parser = Parser()
     if not parser.parse(input_file):
         for error in parser.get_syntax_errors():
-            print(f"----------------\n{error}\n")
+            print(f"----------------\n{error}")
 
         print("----------------\n")
         return -1
