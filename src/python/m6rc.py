@@ -3,7 +3,6 @@ import sys
 import argparse
 from pathlib import Path
 
-# TODO: restore file set parsing
 # TODO: restore comment parsing
 # TODO: split into files
 
@@ -24,6 +23,13 @@ class TokenType:
     BAD_INDENT = 10
     BAD_OUTDENT = 11
     END_OF_FILE = 12
+
+
+class FileAlreadyUsedError(Exception):
+    """Exception raised when a file is used more than once."""
+    def __init__(self, filename):
+        super().__init__(f"The file '{filename}' has already been used.")
+        self.filename = filename
 
 
 class Token:
@@ -132,9 +138,8 @@ class MetaphorLexer(Lexer):
             "Scope:": TokenType.SCOPE,
             "Example:": TokenType.EXAMPLE
         }
-        self.seen_non_whitespace = False
+        self.in_text_block = False
         self.indent_column = 1
-        self.indent_offset = 0
         self.indent_spaces = indent_spaces
         super().__init__(filename)
 
@@ -164,27 +169,29 @@ class MetaphorLexer(Lexer):
         current_indent_column = len(line) - len(line.lstrip(' ')) + 1
 
         # Calculate the difference in indentation
-        self.indent_offset = current_indent_column - self.indent_column
+        indent_offset = current_indent_column - self.indent_column
 
         # Handle indentation increase (INDENT)
-        if self.indent_offset > 0:
-            if self.indent_offset % self.indent_spaces != 0:
+        if indent_offset > 0:
+            if indent_offset % self.indent_spaces != 0:
                 self.tokens.append(Token(TokenType.BAD_INDENT, "[Bad Indent]", line, self.filename, self.current_line, self.current_column))
-            else:
-                while self.indent_offset > 0:
-                    self.tokens.append(Token(TokenType.INDENT, "[Indent]", line, self.filename, self.current_line, self.current_column))
-                    self.indent_offset -= self.indent_spaces
+                return
+
+            while indent_offset > 0:
+                self.tokens.append(Token(TokenType.INDENT, "[Indent]", line, self.filename, self.current_line, self.current_column))
+                indent_offset -= self.indent_spaces
 
             self.indent_column = current_indent_column
 
         # Handle indentation decrease (OUTDENT)
-        elif self.indent_offset < 0:
-            if abs(self.indent_offset) % self.indent_spaces != 0:
+        elif indent_offset < 0:
+            if abs(indent_offset) % self.indent_spaces != 0:
                 self.tokens.append(Token(TokenType.BAD_OUTDENT, "[Bad Outdent]", line, self.filename, self.current_line, self.current_column))
-            else:
-                while self.indent_offset < 0:
-                    self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", line, self.filename, self.current_line, self.current_column))
-                    self.indent_offset += self.indent_spaces
+                return
+
+            while indent_offset < 0:
+                self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", line, self.filename, self.current_line, self.current_column))
+                indent_offset += self.indent_spaces
 
             self.indent_column = current_indent_column
 
@@ -208,19 +215,32 @@ class MetaphorLexer(Lexer):
             # Check if the first word is a recognized keyword
             if words[0] in self.keyword_map:
                 # Create a keyword token
-                keyword_token = Token(self.keyword_map[words[0]], words[0], stripped_line, self.filename, self.current_line, self.current_column)
+                keyword_token = Token(self.keyword_map[words[0]], words[0], line, self.filename, self.current_line, self.current_column)
                 tokens.append(keyword_token)
 
                 # If there is text after the keyword, create a separate text token
                 if len(words) > 1:
-                    text_token = Token(TokenType.KEYWORD_TEXT, words[1], stripped_line, self.filename, self.current_line, self.current_column + len(words[0]) + 1)
+                    text_token = Token(TokenType.KEYWORD_TEXT, words[1], line, self.filename, self.current_line, self.current_column + len(words[0]) + 1)
                     tokens.append(text_token)
 
+                self.in_text_block = False
                 return tokens
 
+        # We're dealing with text.  If we're already in a text block then we want to use the same indentation
+        # level for all rows of text unless we see outdenting (in which case we've got bad text, but we'll
+        # leave that to the parser).
+        start_column = self.current_column
+        if self.in_text_block:
+            if start_column > self.indent_column:
+                start_column = self.indent_column
+
         # If no keyword is found, treat the whole line as text
-        text_token = Token(TokenType.TEXT, stripped_line, stripped_line, self.filename, self.current_line, self.current_column)
-        tokens.append(text_token)
+        text_line = line[start_column - 1:]
+        if self.in_text_block or len(text_line) > 0:
+            text_token = Token(TokenType.TEXT, line[start_column - 1:], line, self.filename, self.current_line, self.current_column)
+            tokens.append(text_token)
+
+        self.in_text_block = True
         return tokens
 
 
@@ -256,6 +276,7 @@ class Parser:
         self.syntax_tree = None
         self.parse_errors = []
         self.lexers = []
+        self.previously_seen_files = set()
 
     def parse(self, filename):
         """
@@ -320,6 +341,10 @@ class Parser:
     def load_file(self, filename):
         """Load a file and push a corresponding lexer to the lexer stack."""
         canonical_filename = os.path.realpath(filename)
+        if canonical_filename in self.previously_seen_files:
+            raise FileAlreadyUsedError(filename)
+
+        self.previously_seen_files.add(canonical_filename)
 
         if not Path(filename).exists():
             raise FileNotFoundError(f"File '{filename}' does not exist.")
@@ -365,6 +390,9 @@ class Parser:
     def parse_scope(self, token):
         """Parse a Scope block."""
         scope_node = ASTNode(token)
+
+        seen_token_type = TokenType.NONE
+
         init_token = self.get_next_token()
         if init_token.type == TokenType.KEYWORD_TEXT:
             scope_node.add_child(self.parse_keyword_text(init_token))
@@ -377,11 +405,16 @@ class Parser:
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
+                if seen_token_type != TokenType.NONE:
+                    self.raise_syntax_error(token, "Text must come first in a 'Scope' block")
+
                 scope_node.add_child(self.parse_text(token))
             elif token.type == TokenType.SCOPE:
                 scope_node.add_child(self.parse_scope(token))
+                seen_token_type = TokenType.SCOPE
             elif token.type == TokenType.EXAMPLE:
                 scope_node.add_child(self.parse_example(token))
+                seen_token_type = TokenType.EXAMPLE
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return scope_node
             else:
@@ -390,6 +423,7 @@ class Parser:
     def parse_example(self, token):
         """Parse an Example block."""
         example_node = ASTNode(token)
+
         init_token = self.get_next_token()
         if init_token.type == TokenType.KEYWORD_TEXT:
             example_node.add_child(self.parse_keyword_text(init_token))
