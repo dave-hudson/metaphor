@@ -571,15 +571,6 @@ def recurse(node, section, out):
         recurse(child, f"{section}.{index}", out)
 
 
-def print_usage(program_name):
-    """Print usage information for the program."""
-    print(f"Usage: {program_name} [options] <file>")
-    print("Options:")
-    print("  -h, --help                Print this help message")
-    print("  -o, --outputFile <file>   Specify output file")
-    print("  -d, --debug               Generate debug output")
-
-
 def main():
     """Main entry point for the program."""
     parser = argparse.ArgumentParser()
