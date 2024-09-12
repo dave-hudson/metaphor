@@ -19,7 +19,6 @@ private:
 
     int indentColumn_;                  // Column number for indentation processing
     bool processingIndent_;             // Are we processing indentation at the start of a line?
-    int indentOffset_;                  // If we're handling indentation changes, how far do we need to move?
     bool inTextBlock_;                  // Are we processing a text block?
 
     const std::map<std::string, TokenType> keyword_map = {

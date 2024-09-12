@@ -190,16 +190,10 @@ auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>
         raiseSyntaxError(initToken, "Expected description or indent for 'Example' block");
     }
 
-    auto seenTokenType = TokenType::NONE;
-
     while (true) {
         const auto& token = getNextToken();
         switch (token.type) {
         case TokenType::TEXT:
-            if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError(token, "Text must come first in an 'Example' block");
-            }
-
             exampleNode->addChild(parseText(token));
             break;
 

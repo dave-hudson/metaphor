@@ -10,40 +10,38 @@ MetaphorLexer::MetaphorLexer(const std::string& filename) :
         Lexer(filename),
         indentColumn_(1),
         processingIndent_(false),
-        indentOffset_(0),
         inTextBlock_(false) {
     lexTokens();
 }
 
 auto MetaphorLexer::processIndentation(size_t column) -> void {
-    if (!indentOffset_) {
+    int indentOffset = column - indentColumn_;
+    if (!indentOffset) {
         return;
     }
 
-    if ((indentOffset_ % INDENT_SPACES) != 0) {
-        if (indentOffset_ > 0) {
-            indentOffset_ = 0;
+    if ((indentOffset % INDENT_SPACES) != 0) {
+        if (indentOffset > 0) {
             tokens_.push_back(Token(TokenType::BAD_INDENT, "[Bad indent]", line_, filename_, currentLine_, column));
             return;
         }
 
-        indentOffset_ = 0;
         tokens_.push_back(Token(TokenType::BAD_OUTDENT, "[Bad outdent]", line_, filename_, currentLine_, column));
         return;
     }
 
-    indentColumn_ += indentOffset_;
-    if (indentOffset_ >= INDENT_SPACES) {
-        while (indentOffset_) {
-            indentOffset_ -= INDENT_SPACES;
+    indentColumn_ += indentOffset;
+    if (indentOffset >= INDENT_SPACES) {
+        while (indentOffset) {
+            indentOffset -= INDENT_SPACES;
             tokens_.push_back(Token(TokenType::INDENT, "[Indent]", line_, filename_, currentLine_, column));
         }
 
         return;
     }
 
-    while (indentOffset_) {
-        indentOffset_ += INDENT_SPACES;
+    while (indentOffset) {
+        indentOffset += INDENT_SPACES;
         tokens_.push_back(Token(TokenType::OUTDENT, "[Outdent]", line_, filename_, currentLine_, column));
     }
 }
@@ -58,7 +56,6 @@ auto MetaphorLexer::consumeWhitespace() -> void {
 auto MetaphorLexer::readKeywordOrText() -> void {
     int startColumn = currentColumn_;
     if (processingIndent_) {
-        indentOffset_ = startColumn - indentColumn_;
         processIndentation(startColumn);
         processingIndent_ = false;
     }
