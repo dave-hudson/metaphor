@@ -86,8 +86,7 @@ class Lexer:
         self.input = self._read_file(filename)
         self.tokens = []
         self.current_line = 1
-        self.current_column = 1  # Track the current column in the line
-        self.seen_non_whitespace = False  # Tracks whether non-whitespace characters have been seen on a line
+        self.current_column = 1
         self._tokenize()
         for i in self.tokens:
             print(f'${i}')
@@ -109,31 +108,6 @@ class Lexer:
         """Tokenize the input file into tokens (to be customized by subclasses)."""
         raise NotImplementedError("Subclasses must implement their own tokenization logic.")
 
-    def _process_whitespace(self, line):
-        """
-        Process whitespace and blank lines.
-
-        If a line is completely blank or contains only whitespace, return a blank TEXT token. 
-        Tracks whether non-whitespace characters have been seen on the line.
-
-        Args:
-            line (str): The current line to process.
-
-        Returns:
-            Token: A token representing a blank line or whitespace.
-        """
-        stripped_line = line.strip()
-
-        # Track whether we've seen non-whitespace characters on this line
-        if stripped_line:
-            self.seen_non_whitespace = True
-        else:
-            if not self.seen_non_whitespace:
-                # If this is a blank line and no non-whitespace characters have been seen, return a blank token
-                return Token(TokenType.TEXT, "", line, self.filename, self.current_line, self.current_column)
-
-        return None  # No whitespace token was generated, continue processing
-
 
 class MetaphorLexer(Lexer):
     """
@@ -154,6 +128,7 @@ class MetaphorLexer(Lexer):
             "Scope:": TokenType.SCOPE,
             "Example:": TokenType.EXAMPLE
         }
+        self.seen_non_whitespace = False
         self.indent_column = 1
         self.indent_offset = 0
         self.indent_spaces = indent_spaces
@@ -166,17 +141,10 @@ class MetaphorLexer(Lexer):
             print(f'{line}')
             self.current_column = 1
 
-            # First, process whitespace and blank lines
-            whitespace_token = self._process_whitespace(line)
-            if whitespace_token:
-                self.tokens.append(whitespace_token)
-                self.current_line += 1
-                continue
-
             # Process indentation and then read keywords/text
             self._process_indentation(line)
             tokens = self.read_keyword_or_text(line)
-            self.tokens.extend(tokens)  # Add all tokens to the token list
+            self.tokens.extend(tokens)
             self.current_line += 1
 
         self._process_outdent()
@@ -187,10 +155,10 @@ class MetaphorLexer(Lexer):
             return
 
         # Calculate the current indentation level (number of leading spaces)
-        current_indent_level = len(line) - len(line.lstrip(' '))
+        current_indent_column = len(line) - len(line.lstrip(' ')) + 1
 
         # Calculate the difference in indentation
-        self.indent_offset = current_indent_level - self.indent_column
+        self.indent_offset = current_indent_column - self.indent_column
 
         # Handle indentation increase (INDENT)
         if self.indent_offset > 0:
@@ -200,7 +168,7 @@ class MetaphorLexer(Lexer):
                 while self.indent_offset > 0:
                     self.tokens.append(Token(TokenType.INDENT, "[Indent]", line, self.filename, self.current_line, self.current_column))
                     self.indent_offset -= self.indent_spaces
-            self.indent_column = current_indent_level
+            self.indent_column = current_indent_column
 
         # Handle indentation decrease (OUTDENT)
         elif self.indent_offset < 0:
@@ -210,7 +178,7 @@ class MetaphorLexer(Lexer):
                 while self.indent_offset < 0:
                     self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", line, self.filename, self.current_line, self.current_column))
                     self.indent_offset += self.indent_spaces
-            self.indent_column = current_indent_level
+            self.indent_column = current_indent_column
 
     def _process_outdent(self):
         """Handles remaining outdents when the file ends."""
@@ -231,25 +199,26 @@ class MetaphorLexer(Lexer):
         """
         tokens = []
         stripped_line = line.strip()
+        if stripped_line:
+            # Split the line by spaces to check for a keyword followed by text
+            words = stripped_line.split(maxsplit=1)
 
-        # Split the line by spaces to check for a keyword followed by text
-        words = stripped_line.split(maxsplit=1)
+            # Check if the first word is a recognized keyword
+            if words[0] in self.keyword_map:
+                # Create a keyword token
+                keyword_token = Token(self.keyword_map[words[0]], words[0], stripped_line, self.filename, self.current_line, self.current_column)
+                tokens.append(keyword_token)
 
-        # Check if the first word is a recognized keyword
-        if words[0] in self.keyword_map:
+                # If there is text after the keyword, create a separate text token
+                if len(words) > 1:
+                    text_token = Token(TokenType.KEYWORD_TEXT, words[1], stripped_line, self.filename, self.current_line, self.current_column + len(words[0]) + 1)
+                    tokens.append(text_token)
 
-            # Create a keyword token
-            keyword_token = Token(self.keyword_map[words[0]], words[0], stripped_line, self.filename, self.current_line, self.current_column)
-            tokens.append(keyword_token)
+                return tokens
 
-            # If there is text after the keyword, create a separate text token
-            if len(words) > 1:
-                text_token = Token(TokenType.KEYWORD_TEXT, words[1], stripped_line, self.filename, self.current_line, self.current_column + len(words[0]) + 1)
-                tokens.append(text_token)
-        else:
-            # If no keyword is found, treat the whole line as text
-            text_token = Token(TokenType.TEXT, stripped_line, stripped_line, self.filename, self.current_line, self.current_column)
-            tokens.append(text_token)
+        # If no keyword is found, treat the whole line as text
+        text_token = Token(TokenType.TEXT, stripped_line, stripped_line, self.filename, self.current_line, self.current_column)
+        tokens.append(text_token)
 
         return tokens
 
@@ -265,15 +234,6 @@ class EmbedLexer(Lexer):
 
         lines = self.input.splitlines()
         for line in lines:
-            self.current_column = 1  # Reset column after each line
-
-            # First, process whitespace and blank lines
-            whitespace_token = self._process_whitespace(line)
-            if whitespace_token:
-                self.tokens.append(whitespace_token)
-                self.current_line += 1
-                continue
-
             token = Token(TokenType.TEXT, line, line, self.filename, self.current_line, self.current_column)
             self.tokens.append(token)
             self.current_line += 1
@@ -296,7 +256,7 @@ class Parser:
         self.parse_errors = []
         self.lexers = []
 
-    def parse(self, file):
+    def parse(self, filename):
         """
         Parse a file and construct the AST.
 
@@ -307,7 +267,8 @@ class Parser:
             bool: True if parsing was successful, False otherwise.
         """
         try:
-            self.load_file(file)
+            self.load_file(filename)
+            self.lexers.append(MetaphorLexer(filename))
             token = self.get_next_token()
 
             if token.type != TokenType.TARGET:
@@ -327,11 +288,15 @@ class Parser:
 
     def get_next_token(self):
         """Get the next token from the active lexer."""
-        if self.lexers:
+        while self.lexers:
             lexer = self.lexers[-1]
             token = lexer.get_next_token()
 
-            if token.type == TokenType.END_OF_FILE:
+            if token.type == TokenType.INCLUDE:
+                self.parse_include()
+            elif token.type == TokenType.EMBED:
+                self.parse_embed()
+            elif token.type == TokenType.END_OF_FILE:
                 self.lexers.pop()
             else:
                 return token
@@ -355,33 +320,36 @@ class Parser:
         """Load a file and push a corresponding lexer to the lexer stack."""
         if not Path(filename).exists():
             raise FileNotFoundError(f"File '{filename}' does not exist.")
-        if filename.endswith('.m6r'):
-            self.lexers.append(MetaphorLexer(filename))
-        else:
-            self.lexers.append(EmbedLexer(filename))
 
     def parse_target(self, token):
         """Parse a target block and construct its AST node."""
         target_node = ASTNode(token)
 
-        token_next = self.get_next_token()
-        if token_next.type == TokenType.KEYWORD_TEXT:
-            target_node.addChild(self.parse_keyword_text(token_next))
+        seen_token_type = TokenType.NONE
+
+        init_token = self.get_next_token()
+        if init_token.type == TokenType.KEYWORD_TEXT:
+            target_node.addChild(self.parse_keyword_text(init_token))
+            indent_token = self.get_next_token()
+            if indent_token.type != TokenType.INDENT:
+                self.raise_syntax_error(token, "Expected indent after keyword description for 'Target' block")
+        elif init_token.type != TokenType.INDENT:
+            self.raise_syntax_error(token, "Expected description or indent for 'Target' block")
 
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
+                if seen_token_type != TokenType.NONE:
+                    self.raise_syntax_error(token, "Text must come first in a 'Target' block")
+
                 target_node.addChild(self.parse_text(token))
             elif token.type == TokenType.SCOPE:
                 target_node.addChild(self.parse_scope(token))
-            elif token.type == TokenType.INCLUDE:
-                self.parse_include(token)
-            elif token.type == TokenType.EMBED:
-                self.parse_embed(token)
+                seen_token_type = TokenType.SCOPE
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return target_node
             else:
-                self.raise_syntax_error(token, f"Unexpected token: {token.value}")
+                self.raise_syntax_error(token, f"Unexpected token: {token.value} in 'Target' block")
 
     def parse_keyword_text(self, token):
         """Parse keyword text."""
@@ -394,20 +362,27 @@ class Parser:
     def parse_scope(self, token):
         """Parse a Scope block."""
         scope_node = ASTNode(token)
-        token_next = self.get_next_token()
-        if token_next.type == TokenType.KEYWORD_TEXT:
-            scope_node.addChild(self.parse_keyword_text(token_next))
+        init_token = self.get_next_token()
+        if init_token.type == TokenType.KEYWORD_TEXT:
+            scope_node.addChild(self.parse_keyword_text(init_token))
+            indent_token = self.get_next_token()
+            if indent_token.type != TokenType.INDENT:
+                self.raise_syntax_error(token, "Expected indent after keyword description for 'Scope' block")
+        elif init_token.type != TokenType.INDENT:
+            self.raise_syntax_error(token, "Expected description or indent for 'Scope' block")
 
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
                 scope_node.addChild(self.parse_text(token))
+            elif token.type == TokenType.SCOPE:
+                scope_node.addChild(self.parse_scope(token))
             elif token.type == TokenType.EXAMPLE:
                 scope_node.addChild(self.parse_example(token))
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return scope_node
             else:
-                self.raise_syntax_error(token, f"Unexpected token: {token.value}")
+                self.raise_syntax_error(token, f"Unexpected token: {token.value} in 'Scope' block")
 
     def parse_example(self, token):
         """Parse an Example block."""
@@ -430,21 +405,27 @@ class Parser:
             else:
                 self.raise_syntax_error(token, f"Unexpected token: {token.value}")
 
-    def parse_include(self, token):
+    def parse_include(self):
         """Parse an Include block and load the included file."""
         token_next = self.get_next_token()
         if token_next.type != TokenType.KEYWORD_TEXT:
             self.raise_syntax_error(token_next, "Expected file name for 'Include'")
             return
-        self.load_file(token_next.value_)
 
-    def parse_embed(self, token):
+        filename = token_next.value
+        self.load_file(filename)
+        self.lexers.append(MetaphorLexer(filename))
+
+    def parse_embed(self):
         """Parse an Embed block and load the embedded file."""
         token_next = self.get_next_token()
         if token_next.type != TokenType.KEYWORD_TEXT:
             self.raise_syntax_error(token_next, "Expected file name for 'Embed'")
             return
-        self.load_file(token_next.value_)
+
+        filename = token_next.value
+        self.load_file(filename)
+        self.lexers.append(EmbedLexer(filename))
 
 
 def simplify_text(node):
