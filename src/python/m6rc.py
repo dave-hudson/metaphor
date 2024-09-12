@@ -1,7 +1,11 @@
+import os
 import sys
 import argparse
 from pathlib import Path
 
+# TODO: restore file set parsing
+# TODO: restore comment parsing
+# TODO: split into files
 
 class TokenType:
     """
@@ -138,7 +142,6 @@ class MetaphorLexer(Lexer):
         """Tokenizes the input file into appropriate tokens."""
         lines = self.input.splitlines()
         for line in lines:
-            print(f'{line}')
             self.current_column = 1
 
             # Process indentation and then read keywords/text
@@ -289,7 +292,6 @@ class Parser:
         while self.lexers:
             lexer = self.lexers[-1]
             token = lexer.get_next_token()
-            print(f"token: ", token)
 
             if token.type == TokenType.INCLUDE:
                 self.parse_include()
@@ -317,6 +319,8 @@ class Parser:
 
     def load_file(self, filename):
         """Load a file and push a corresponding lexer to the lexer stack."""
+        canonical_filename = os.path.realpath(filename)
+
         if not Path(filename).exists():
             raise FileNotFoundError(f"File '{filename}' does not exist.")
 
@@ -455,16 +459,36 @@ def simplify_text(node):
             continue
 
         if child.value.startswith("```"):
-            in_formatted_section = not in_formatted_section
+            in_formatted_section = True
 
+        # If our sibling isn't a text node we can't merge it.
         sibling = node.child_nodes[i + 1]
         if sibling.token_type != TokenType.TEXT:
             in_formatted_section = False
             i += 1
             continue
 
-        # Merge adjacent text nodes unless a blank line separates them
-        if sibling.value == "":
+        # Is our sibling a formatted code delimeter?
+        if sibling.value.startswith("```"):
+            if in_formatted_section:
+                child.value += "\n" + sibling.value
+                del node.child_nodes[i + 1]
+                i += 2
+                in_formatted_section = False
+                continue
+
+            i += 1
+            continue
+
+        # If we're in a formatted text section then apply a newline and merge these two elements.
+        if in_formatted_section:
+            child.value += "\n" + sibling.value
+            del node.child_nodes[i + 1]
+            continue
+
+        # If our next text is an empty line then this indicates the end of a paragraph.
+        if len(sibling.value) == 0:
+            del node.child_nodes[i + 1]
             i += 1
             continue
 
