@@ -1,11 +1,3 @@
-import os
-import sys
-import argparse
-from pathlib import Path
-
-from Token import Token, TokenType
-from Lexer import Lexer
-
 class ASTNode:
     """
     Represents a node in the Abstract Syntax Tree (AST).
@@ -35,4 +27,3 @@ class ASTNode:
         print("  " * level + self.value)
         for child in self.child_nodes:
             child.print_tree(level + 1)
-
