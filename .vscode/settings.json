@@ -1,0 +1,7 @@
+{
+    "pylint.args": [
+        "--disable=C0103",
+        "--disable=missing-module-docstring",
+        "--disable=missing-function-docstring"
+    ]
+}
