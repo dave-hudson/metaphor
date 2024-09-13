@@ -40,4 +40,5 @@ class Token:
         self.column = column
 
     def __str__(self):
-        return f'Token(type={self.type}, value="{self.value}", line={self.line}, column={self.column})'
+        return f"Token(type={self.type}, value='{self.value}', " \
+            "line={self.line}, column={self.column})"

@@ -77,7 +77,8 @@ class Parser:
         for _ in range(1, token.column):
             caret += " "
 
-        error_message = f"{message}: line {token.line}, column {token.column}, file {token.filename}\n{caret}|\n{caret}v\n{token.input}"
+        error_message = f"{message}: line {token.line}, column {token.column}, " \
+            "file {token.filename}\n{caret}|\n{caret}v\n{token.input}"
         self.parse_errors.append(error_message)
 
     def get_syntax_tree(self):
@@ -107,7 +108,8 @@ class Parser:
             target_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
-                self.raise_syntax_error(token, "Expected indent after keyword description for 'Target' block")
+                self.raise_syntax_error(token, "Expected indent after keyword description " \
+                                        "for 'Target' block")
         elif init_token.type != TokenType.INDENT:
             self.raise_syntax_error(token, "Expected description or indent for 'Target' block")
 
@@ -124,7 +126,8 @@ class Parser:
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return target_node
             else:
-                self.raise_syntax_error(token, f"Unexpected token: {token.value} in 'Target' block")
+                self.raise_syntax_error(token, f"Unexpected token: {token.value} in " \
+                                        "'Target' block")
 
     def parse_keyword_text(self, token):
         """Parse keyword text."""
@@ -145,7 +148,8 @@ class Parser:
             scope_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
-                self.raise_syntax_error(token, "Expected indent after keyword description for 'Scope' block")
+                self.raise_syntax_error(token, "Expected indent after keyword description " \
+                                        "for 'Scope' block")
         elif init_token.type != TokenType.INDENT:
             self.raise_syntax_error(token, "Expected description or indent for 'Scope' block")
 
@@ -176,7 +180,8 @@ class Parser:
             example_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
-                self.raise_syntax_error(token, "Expected indent after keyword description for 'Example' block")
+                self.raise_syntax_error(token, "Expected indent after keyword description for " \
+                                        "'Example' block")
         elif init_token.type != TokenType.INDENT:
             self.raise_syntax_error(token, "Expected description or indent for 'Example' block")
 
@@ -187,7 +192,8 @@ class Parser:
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
                 return example_node
             else:
-                self.raise_syntax_error(token, f"Unexpected token: {token.value} in 'Example' block")
+                self.raise_syntax_error(token, f"Unexpected token: {token.value} in " \
+                                        "'Example' block")
 
     def parse_include(self):
         """Parse an Include block and load the included file."""

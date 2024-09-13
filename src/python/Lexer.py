@@ -4,7 +4,8 @@ from Token import Token, TokenType
 
 class Lexer:
     """
-    Base Lexer class that handles basic tokenization such as blank lines, whitespace tracking, and generating tokens for input files.
+    Base Lexer class that handles basic tokenization such as blank lines, whitespace tracking, and
+    generating tokens for input files.
     """
     def __init__(self, filename):
         self.filename = filename
@@ -44,4 +45,3 @@ class Lexer:
     def _tokenize(self):
         """Tokenize the input file into tokens (to be customized by subclasses)."""
         raise NotImplementedError("Subclasses must implement their own tokenization logic.")
-

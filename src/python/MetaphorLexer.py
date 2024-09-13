@@ -3,7 +3,8 @@ from Lexer import Lexer
 
 class MetaphorLexer(Lexer):
     """
-    Lexer for handling the metaphor language with its specific syntax, including keywords like Target, Scope, Example, and proper indentation handling.
+    Lexer for handling the metaphor language with its specific syntax, including keywords like
+    Target, Scope, Example, and proper indentation handling.
     """
     def __init__(self, filename, indent_spaces=4):
         """
@@ -11,7 +12,8 @@ class MetaphorLexer(Lexer):
 
         Args:
             filename (str): The filename to be lexed.
-            indent_spaces (int): The number of spaces that make up one level of indentation (default is 4).
+            indent_spaces (int): The number of spaces that make up one level of indentation
+                (default is 4).
         """
         self.keyword_map = {
             "Include:": TokenType.INCLUDE,
@@ -36,7 +38,8 @@ class MetaphorLexer(Lexer):
 
         # Handles remaining outdents as the file has ended.
         while self.indent_column > 1:
-            self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", "", self.filename, self.current_line, self.indent_column))
+            self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", "", self.filename,
+                                        self.current_line, self.indent_column))
             self.indent_column -= self.indent_spaces
 
     def _process_indentation(self, line):
@@ -53,11 +56,14 @@ class MetaphorLexer(Lexer):
         # Handle indentation increase (INDENT)
         if indent_offset > 0:
             if indent_offset % self.indent_spaces != 0:
-                self.tokens.append(Token(TokenType.BAD_INDENT, "[Bad Indent]", line, self.filename, self.current_line, current_indent_column))
+                self.tokens.append(Token(TokenType.BAD_INDENT, "[Bad Indent]", line,
+                                            self.filename, self.current_line,
+                                            current_indent_column))
                 return
 
             while indent_offset > 0:
-                self.tokens.append(Token(TokenType.INDENT, "[Indent]", line, self.filename, self.current_line, current_indent_column))
+                self.tokens.append(Token(TokenType.INDENT, "[Indent]", line, self.filename,
+                                            self.current_line, current_indent_column))
                 indent_offset -= self.indent_spaces
 
             self.indent_column = current_indent_column
@@ -65,11 +71,14 @@ class MetaphorLexer(Lexer):
         # Handle indentation decrease (OUTDENT)
         elif indent_offset < 0:
             if abs(indent_offset) % self.indent_spaces != 0:
-                self.tokens.append(Token(TokenType.BAD_OUTDENT, "[Bad Outdent]", line, self.filename, self.current_line, current_indent_column))
+                self.tokens.append(Token(TokenType.BAD_OUTDENT, "[Bad Outdent]", line,
+                                            self.filename, self.current_line,
+                                            current_indent_column))
                 return
 
             while indent_offset < 0:
-                self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", line, self.filename, self.current_line, current_indent_column))
+                self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", line, self.filename,
+                                            self.current_line, current_indent_column))
                 indent_offset += self.indent_spaces
 
             self.indent_column = current_indent_column
@@ -99,18 +108,21 @@ class MetaphorLexer(Lexer):
             # Check if the first word is a recognized keyword
             if words[0] in self.keyword_map:
                 # Create a keyword token
-                self.tokens.append(Token(self.keyword_map[words[0]], words[0], line, self.filename, self.current_line, start_column))
+                self.tokens.append(Token(self.keyword_map[words[0]], words[0], line,
+                                            self.filename, self.current_line, start_column))
 
                 # If there is text after the keyword, create a separate text token
                 if len(words) > 1:
-                    self.tokens.append(Token(TokenType.KEYWORD_TEXT, words[1], line, self.filename, self.current_line, start_column + len(words[0]) + 1))
+                    self.tokens.append(Token(TokenType.KEYWORD_TEXT, words[1], line,
+                                                self.filename, self.current_line,
+                                                start_column + len(words[0]) + 1))
 
                 self.in_text_block = False
                 return
 
-        # We're dealing with text.  If we're already in a text block then we want to use the same indentation
-        # level for all rows of text unless we see outdenting (in which case we've got bad text, but we'll
-        # leave that to the parser).
+        # We're dealing with text.  If we're already in a text block then we want to use the same
+        # indentation level for all rows of text unless we see outdenting (in which case we've got
+        # bad text, but we'll leave that to the parser).
         if self.in_text_block:
             if start_column > self.indent_column:
                 start_column = self.indent_column
@@ -118,6 +130,7 @@ class MetaphorLexer(Lexer):
         # If no keyword is found, treat the whole line as text
         text_line = line[start_column - 1:]
         if self.in_text_block or len(text_line) > 0:
-            self.tokens.append(Token(TokenType.TEXT, line[start_column - 1:], line, self.filename, self.current_line, start_column))
+            self.tokens.append(Token(TokenType.TEXT, line[start_column - 1:], line,
+                                        self.filename, self.current_line, start_column))
 
         self.in_text_block = True
