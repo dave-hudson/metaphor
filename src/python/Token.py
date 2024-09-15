@@ -41,4 +41,4 @@ class Token:
 
     def __str__(self):
         return f"Token(type={self.type}, value='{self.value}', " \
-            "line={self.line}, column={self.column})"
+            f"line={self.line}, column={self.column})"
