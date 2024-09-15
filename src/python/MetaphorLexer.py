@@ -31,8 +31,6 @@ class MetaphorLexer(Lexer):
         """Tokenizes the input file into appropriate tokens."""
         lines = self.input.splitlines()
         for line in lines:
-            # Process indentation and then read keywords/text
-            self._process_indentation(line)
             self._process_line_contents(line)
             self.current_line += 1
 
@@ -42,46 +40,42 @@ class MetaphorLexer(Lexer):
                                         self.current_line, self.indent_column))
             self.indent_column -= self.indent_spaces
 
-    def _process_indentation(self, line):
+    def _process_indentation(self, line, start_column):
         """Processes the indentation of the current line."""
         if len(line) == 0:
             return
 
-        # Calculate the current indentation level (number of leading spaces)
-        current_indent_column = len(line) - len(line.lstrip(' ')) + 1
-
         # Calculate the difference in indentation
-        indent_offset = current_indent_column - self.indent_column
+        indent_offset = start_column - self.indent_column
 
         # Handle indentation increase (INDENT)
         if indent_offset > 0:
             if indent_offset % self.indent_spaces != 0:
                 self.tokens.append(Token(TokenType.BAD_INDENT, "[Bad Indent]", line,
                                             self.filename, self.current_line,
-                                            current_indent_column))
+                                            start_column))
                 return
 
             while indent_offset > 0:
                 self.tokens.append(Token(TokenType.INDENT, "[Indent]", line, self.filename,
-                                            self.current_line, current_indent_column))
+                                            self.current_line, start_column))
                 indent_offset -= self.indent_spaces
 
-            self.indent_column = current_indent_column
+            self.indent_column = start_column
 
         # Handle indentation decrease (OUTDENT)
         elif indent_offset < 0:
             if abs(indent_offset) % self.indent_spaces != 0:
                 self.tokens.append(Token(TokenType.BAD_OUTDENT, "[Bad Outdent]", line,
-                                            self.filename, self.current_line,
-                                            current_indent_column))
+                                            self.filename, self.current_line, start_column))
                 return
 
             while indent_offset < 0:
                 self.tokens.append(Token(TokenType.OUTDENT, "[Outdent]", line, self.filename,
-                                            self.current_line, current_indent_column))
+                                            self.current_line, start_column))
                 indent_offset += self.indent_spaces
 
-            self.indent_column = current_indent_column
+            self.indent_column = start_column
 
     def _process_line_contents(self, line):
         """
@@ -108,6 +102,7 @@ class MetaphorLexer(Lexer):
             # Check if the first word is a recognized keyword
             if words[0] in self.keyword_map:
                 # Create a keyword token
+                self._process_indentation(line, start_column)
                 self.tokens.append(Token(self.keyword_map[words[0]], words[0], line,
                                             self.filename, self.current_line, start_column))
 
@@ -126,6 +121,10 @@ class MetaphorLexer(Lexer):
         if self.in_text_block:
             if start_column > self.indent_column:
                 start_column = self.indent_column
+            elif start_column < self.indent_column:
+                self._process_indentation(line, start_column)
+        else:
+            self._process_indentation(line, start_column)
 
         # If no keyword is found, treat the whole line as text
         text_line = line[start_column - 1:]
@@ -133,4 +132,5 @@ class MetaphorLexer(Lexer):
             self.tokens.append(Token(TokenType.TEXT, line[start_column - 1:], line,
                                         self.filename, self.current_line, start_column))
 
-        self.in_text_block = True
+        if len(text_line) > 0:
+            self.in_text_block = True
