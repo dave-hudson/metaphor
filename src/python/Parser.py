@@ -78,7 +78,7 @@ class Parser:
             caret += " "
 
         error_message = f"{message}: line {token.line}, column {token.column}, " \
-            "file {token.filename}\n{caret}|\n{caret}v\n{token.input}"
+            f"file {token.filename}\n{caret}|\n{caret}v\n{token.input}"
         self.parse_errors.append(error_message)
 
     def get_syntax_tree(self):
