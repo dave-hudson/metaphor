@@ -26,7 +26,7 @@ def simplify_text(node):
 
         # Preserve blank lines (empty text nodes)
         if not in_formatted_section and len(child.value) == 0:
-            i += 1
+            del node.child_nodes[i]
             continue
 
         if i == len(node.child_nodes) - 1:
@@ -67,7 +67,7 @@ def simplify_text(node):
             i += 1
             continue
 
-        child.value += " " + sibling.value
+        child.value += "\n" + sibling.value
         del node.child_nodes[i + 1]
 
 
