@@ -1,30 +1,30 @@
-Target: Instructions for use of metaphor
+Action: Instructions for use of metaphor
     Please analyze the code below and generate a version of the same application in python.  Match the python module
     names to the names used in the C++ code.
 
-    Scope: Implementation and dependencies
+    Context: Implementation and dependencies
         As an engineer working with the application, I want the application to be easy to use and understand,
         so I can maintain and enhance it over time.
 
-        Scope: Implement in Python 3
+        Context: Implement in Python 3
             The application will be written in the latest version of Python 3.
 
-        Scope: Indentation of code
+        Context: Indentation of code
             Code must be indented by 4 spaces.
 
-        Scope: Use of docstrings
+        Context: Use of docstrings
             Use docstrings to describe all modules, classes, and functions.
 
-        Scope: Use of comments
+        Context: Use of comments
             Use additional comments to describe any complex logic.
 
-        Scope: PEP 8 imports
+        Context: PEP 8 imports
             The import list in any module should follow PEP 8 guidelines.
 
-        Scope: Avoid unnecessary elif and else statements
+        Context: Avoid unnecessary elif and else statements
             Do not use elif or else statements if the preceding statement returns.
 
-    Scope: Previous version
+    Context: Previous version
         An implementation of the current application written in C++ is provided here.
 
         Embed: src/m6rc/m6rc.cpp

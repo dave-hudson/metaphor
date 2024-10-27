@@ -1,4 +1,4 @@
-Target: Instructions for use of metaphor
+Action: Instructions for use of metaphor
     Please analyze the code below and write a user manual for the m6rc compiler
 
     Embed: src/m6rc/m6rc.cpp

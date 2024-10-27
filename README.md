@@ -10,8 +10,8 @@ m6rc compiler.
 Metaphor is a simple declarative language designed to create Maximal Instruction Prompts (MIPs) for Large Language
 Models (LLMs).
 
-Metaphor follows a very simple design that captures a target objective for the LLM to fulfil.  This target is supported by a
-hierarchical description of the scope the LLM is being asked to use to fulfil the target.
+Metaphor follows a very simple design that captures an action objective for the LLM to fulfil.  This action is supported by a
+hierarchical description of the context the LLM is being asked to use to fulfil the action.
 
 The design is natural language based but this use of natural language is slightly constrained by some keywords so m6rc can
 construct more effective MIP prompts.
@@ -30,11 +30,11 @@ This approach has many advantages:
 
 Metaphor (m6r) files follow a very simple document-like structure.  It has only 5 keywords:
 
-- `Target:` - defines the top-level target objective being conveyed to the LLM.  There is only one `Target:` keyword
+- `Action:` - defines the top-level action objective being conveyed to the LLM.  There is only one `Action:` keyword
   in any given Metaphor input.
-- `Scope:` - a hierarchical description of the scope of the work we want the LLM to do and supporting information.
-  `Scope:` elements may nest but must only exist within the scope of a `Target:`.
-- `Example:` - defines an example of how some `Scope:` item should behave.  `Example:` can only be used within a `Scope:`.
+- `Context:` - a hierarchical description of the context of the work we want the LLM to do and supporting information.
+  `Context:` elements may nest but must only exist within the context of a `Action:`.
+- `Role:` - defines a role to be played by the LLM when fulfilling its `Action:`.
 - `Embed:` - embeds an external file into the prompt, also indicating the language involved to the LLM.
 - `Include:` - includes another Metaphor file into the current one, as if that one was directly part of the file being
   procesed, but auto-indented to the current indentation level.
@@ -141,5 +141,5 @@ The compiler provides clear and detailed error messages if issues are detected d
 
 For example:
 ```
-Expected 'Target' keyword: line 10, column 5, file example.m6r
+Expected 'Action' keyword: line 10, column 5, file example.m6r
 ```

@@ -87,18 +87,18 @@ auto Parser::parseText(const Token& textToken) -> std::unique_ptr<ASTNode> {
     return std::make_unique<ASTNode>(textToken);
 }
 
-auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
-    auto targetNode = std::make_unique<ASTNode>(targetToken);
+auto Parser::parseAction(const Token& actionToken) -> std::unique_ptr<ASTNode> {
+    auto actionNode = std::make_unique<ASTNode>(actionToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::KEYWORD_TEXT) {
-        targetNode->addChild(parseKeywordText(initToken));
+        actionNode->addChild(parseKeywordText(initToken));
         const auto& indentToken = getNextToken();
         if (indentToken.type != TokenType::INDENT) {
-            raiseSyntaxError(indentToken, "Expected indent for 'Target' block");
+            raiseSyntaxError(indentToken, "Expected indent for 'Action' block");
         }
     } else if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError(initToken, "Expected description or indent for 'Target' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Action' block");
     }
 
     auto seenTokenType = TokenType::NONE;
@@ -108,39 +108,39 @@ auto Parser::parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode> {
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError(token, "Text must come first in a 'Target' block");
+                raiseSyntaxError(token, "Text must come first in an 'Action' block");
             }
 
-            targetNode->addChild(parseText(token));
+            actionNode->addChild(parseText(token));
             break;
 
-        case TokenType::SCOPE:
-            targetNode->addChild(parseScope(token));
-            seenTokenType = TokenType::SCOPE;
+        case TokenType::CONTEXT:
+            actionNode->addChild(parseContext(token));
+            seenTokenType = TokenType::CONTEXT;
             break;
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            return targetNode;
+            return actionNode;
 
         default:
-            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Target' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Action' block");
         }
     }
 }
 
-auto Parser::parseScope(const Token& scopeToken) -> std::unique_ptr<ASTNode> {
-    auto scopeNode = std::make_unique<ASTNode>(scopeToken);
+auto Parser::parseContext(const Token& contextToken) -> std::unique_ptr<ASTNode> {
+    auto contextNode = std::make_unique<ASTNode>(contextToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::KEYWORD_TEXT) {
-        scopeNode->addChild(parseKeywordText(initToken));
+        contextNode->addChild(parseKeywordText(initToken));
         const auto& indentToken = getNextToken();
         if (indentToken.type != TokenType::INDENT) {
-            raiseSyntaxError(indentToken, "Expected indent for 'Scope' block");
+            raiseSyntaxError(indentToken, "Expected indent for 'Context' block");
         }
     } else if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError(initToken, "Expected description or indent for 'Scope' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Context' block");
     }
 
     auto seenTokenType = TokenType::NONE;
@@ -150,59 +150,59 @@ auto Parser::parseScope(const Token& scopeToken) -> std::unique_ptr<ASTNode> {
         switch (token.type) {
         case TokenType::TEXT:
             if (seenTokenType != TokenType::NONE) {
-                raiseSyntaxError(token, "Text must come first in a 'Scope' block");
+                raiseSyntaxError(token, "Text must come first in a 'Context' block");
             }
 
-            scopeNode->addChild(parseText(token));
+            contextNode->addChild(parseText(token));
             break;
 
-        case TokenType::SCOPE:
-            scopeNode->addChild(parseScope(token));
-            seenTokenType = TokenType::SCOPE;
+        case TokenType::CONTEXT:
+            contextNode->addChild(parseContext(token));
+            seenTokenType = TokenType::CONTEXT;
             break;
 
-        case TokenType::EXAMPLE:
-            scopeNode->addChild(parseExample(token));
-            seenTokenType = TokenType::EXAMPLE;
+        case TokenType::ROLE:
+            contextNode->addChild(parseRole(token));
+            seenTokenType = TokenType::ROLE;
             break;
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            return scopeNode;
+            return contextNode;
 
         default:
-            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Scope' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Context' block");
         }
     }
 }
 
-auto Parser::parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode> {
-    auto exampleNode = std::make_unique<ASTNode>(exampleToken);
+auto Parser::parseRole(const Token& roleToken) -> std::unique_ptr<ASTNode> {
+    auto roleNode = std::make_unique<ASTNode>(roleToken);
 
     const auto& initToken = getNextToken();
     if (initToken.type == TokenType::KEYWORD_TEXT) {
-        exampleNode->addChild(parseKeywordText(initToken));
+        roleNode->addChild(parseKeywordText(initToken));
         const auto& indentToken = getNextToken();
         if (indentToken.type != TokenType::INDENT) {
-            raiseSyntaxError(indentToken, "Expected indent for 'Example' block");
+            raiseSyntaxError(indentToken, "Expected indent for 'Role' block");
         }
     } else if (initToken.type != TokenType::INDENT) {
-        raiseSyntaxError(initToken, "Expected description or indent for 'Example' block");
+        raiseSyntaxError(initToken, "Expected description or indent for 'Role' block");
     }
 
     while (true) {
         const auto& token = getNextToken();
         switch (token.type) {
         case TokenType::TEXT:
-            exampleNode->addChild(parseText(token));
+            roleNode->addChild(parseText(token));
             break;
 
         case TokenType::OUTDENT:
         case TokenType::END_OF_FILE:
-            return exampleNode;
+            return roleNode;
 
         default:
-            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Example' block");
+            raiseSyntaxError(token, "Unexpected '" + token.value + "' in 'Role' block");
         }
     }
 }
@@ -216,15 +216,15 @@ auto Parser::parse(const std::string& initial_file) -> bool {
     lexers_.push_back(std::make_unique<MetaphorLexer>(initial_file));
 
     const auto& token = getNextToken();
-    if (token.type != TokenType::TARGET) {
-        raiseSyntaxError(token, "Expected 'Target' keyword");
+    if (token.type != TokenType::ACTION) {
+        raiseSyntaxError(token, "Expected 'Action' keyword");
     }
 
-    syntaxTree_ = parseTarget(token);
+    syntaxTree_ = parseAction(token);
 
     const auto& tokenNext = getNextToken();
     if (tokenNext.type != TokenType::END_OF_FILE) {
-        raiseSyntaxError(tokenNext, "Unexpected text after 'Target' block");
+        raiseSyntaxError(tokenNext, "Unexpected text after 'Action' block");
     }
 
     if (parseErrors_.size() > 0) {

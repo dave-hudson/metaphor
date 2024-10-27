@@ -11,9 +11,9 @@ class TokenType(Enum):
     EMBED = 4
     KEYWORD_TEXT = 5
     TEXT = 6
-    TARGET = 7
-    SCOPE = 8
-    EXAMPLE = 9
+    ACTION = 7
+    CONTEXT = 8
+    ROLE = 9
     BAD_INDENT = 10
     BAD_OUTDENT = 11
     END_OF_FILE = 12
@@ -24,7 +24,7 @@ class Token:
     Represents a token in the input stream.
 
     Attributes:
-        type (TokenType): The type of the token (e.g., TEXT, TARGET).
+        type (TokenType): The type of the token (e.g., TEXT, ACTION).
         value (str): The actual string value of the token.
         input (str): The entire line of input where the token appears.
         filename (str): The file where the token was read from.

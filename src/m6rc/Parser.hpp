@@ -26,9 +26,9 @@ private:
     auto parseEmbed() -> void;
     auto parseKeywordText(const Token& textToken) -> std::unique_ptr<ASTNode>;
     auto parseText(const Token& textToken) -> std::unique_ptr<ASTNode>;
-    auto parseTarget(const Token& targetToken) -> std::unique_ptr<ASTNode>;
-    auto parseScope(const Token& scopeToken) -> std::unique_ptr<ASTNode>;
-    auto parseExample(const Token& exampleToken) -> std::unique_ptr<ASTNode>;
+    auto parseAction(const Token& actionToken) -> std::unique_ptr<ASTNode>;
+    auto parseContext(const Token& contextToken) -> std::unique_ptr<ASTNode>;
+    auto parseRole(const Token& exampleToken) -> std::unique_ptr<ASTNode>;
 
     std::vector<std::unique_ptr<Lexer>> lexers_;
                                         // A vector of lexers currently being used for different files.

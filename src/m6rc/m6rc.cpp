@@ -99,9 +99,9 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
         out << node.value_ << std::endl << std::endl;
         return;
 
-    case TokenType::TARGET:
-    case TokenType::SCOPE:
-    case TokenType::EXAMPLE:
+    case TokenType::ACTION:
+    case TokenType::CONTEXT:
+    case TokenType::ROLE:
         if (node.childNodes_.size()) {
             const auto& childToken = node.childNodes_[0];
             if (childToken->tokenType_ == TokenType::KEYWORD_TEXT) {
@@ -119,8 +119,8 @@ void recurse(const ASTNode& node, std::string section, std::ostream& out) {
 
     int index = 0;
     for (const auto& child : node.childNodes_) {
-        if (child->tokenType_ == TokenType::SCOPE ||
-                child->tokenType_ == TokenType::EXAMPLE) {
+        if (child->tokenType_ == TokenType::CONTEXT ||
+                child->tokenType_ == TokenType::ROLE) {
             index++;
         }
 

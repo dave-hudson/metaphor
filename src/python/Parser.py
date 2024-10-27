@@ -36,15 +36,15 @@ class Parser:
             self.lexers.append(MetaphorLexer(filename))
             token = self.get_next_token()
 
-            if token.type != TokenType.TARGET:
-                self.raise_syntax_error(token, "Expected 'Target' keyword")
+            if token.type != TokenType.ACTION:
+                self.raise_syntax_error(token, "Expected 'Action' keyword")
                 return False
 
-            self.syntax_tree = self.parse_target(token)
+            self.syntax_tree = self.parse_action(token)
 
             token_next = self.get_next_token()
             if token_next.type != TokenType.END_OF_FILE:
-                self.raise_syntax_error(token_next, "Unexpected text after 'Target' block")
+                self.raise_syntax_error(token_next, "Unexpected text after 'Action' block")
 
             return not self.parse_errors
         except FileNotFoundError as e:
@@ -97,37 +97,37 @@ class Parser:
 
         self.previously_seen_files.add(canonical_filename)
 
-    def parse_target(self, token):
-        """Parse a target block and construct its AST node."""
-        target_node = ASTNode(token)
+    def parse_action(self, token):
+        """Parse an action block and construct its AST node."""
+        action_node = ASTNode(token)
 
         seen_token_type = TokenType.NONE
 
         init_token = self.get_next_token()
         if init_token.type == TokenType.KEYWORD_TEXT:
-            target_node.add_child(self.parse_keyword_text(init_token))
+            action_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
                 self.raise_syntax_error(token, "Expected indent after keyword description " \
-                                        "for 'Target' block")
+                                        "for 'Action' block")
         elif init_token.type != TokenType.INDENT:
-            self.raise_syntax_error(token, "Expected description or indent for 'Target' block")
+            self.raise_syntax_error(token, "Expected description or indent for 'Action' block")
 
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
                 if seen_token_type != TokenType.NONE:
-                    self.raise_syntax_error(token, "Text must come first in a 'Target' block")
+                    self.raise_syntax_error(token, "Text must come first in an 'Action' block")
 
-                target_node.add_child(self.parse_text(token))
-            elif token.type == TokenType.SCOPE:
-                target_node.add_child(self.parse_scope(token))
-                seen_token_type = TokenType.SCOPE
+                action_node.add_child(self.parse_text(token))
+            elif token.type == TokenType.CONTEXT:
+                action_node.add_child(self.parse_context(token))
+                seen_token_type = TokenType.CONTEXT
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
-                return target_node
+                return action_node
             else:
                 self.raise_syntax_error(token, f"Unexpected token: {token.value} in " \
-                                        "'Target' block")
+                                        "'Action' block")
 
     def parse_keyword_text(self, token):
         """Parse keyword text."""
@@ -137,63 +137,63 @@ class Parser:
         """Parse a text block."""
         return ASTNode(token)
 
-    def parse_scope(self, token):
-        """Parse a Scope block."""
-        scope_node = ASTNode(token)
+    def parse_context(self, token):
+        """Parse a Context block."""
+        context_node = ASTNode(token)
 
         seen_token_type = TokenType.NONE
 
         init_token = self.get_next_token()
         if init_token.type == TokenType.KEYWORD_TEXT:
-            scope_node.add_child(self.parse_keyword_text(init_token))
+            context_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
                 self.raise_syntax_error(token, "Expected indent after keyword description " \
-                                        "for 'Scope' block")
+                                        "for 'Context' block")
         elif init_token.type != TokenType.INDENT:
-            self.raise_syntax_error(token, "Expected description or indent for 'Scope' block")
+            self.raise_syntax_error(token, "Expected description or indent for 'Context' block")
 
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
                 if seen_token_type != TokenType.NONE:
-                    self.raise_syntax_error(token, "Text must come first in a 'Scope' block")
+                    self.raise_syntax_error(token, "Text must come first in a 'Context' block")
 
-                scope_node.add_child(self.parse_text(token))
-            elif token.type == TokenType.SCOPE:
-                scope_node.add_child(self.parse_scope(token))
-                seen_token_type = TokenType.SCOPE
-            elif token.type == TokenType.EXAMPLE:
-                scope_node.add_child(self.parse_example(token))
-                seen_token_type = TokenType.EXAMPLE
+                context_node.add_child(self.parse_text(token))
+            elif token.type == TokenType.CONTEXT:
+                context_node.add_child(self.parse_context(token))
+                seen_token_type = TokenType.CONTEXT
+            elif token.type == TokenType.ROLE:
+                context_node.add_child(self.parse_role(token))
+                seen_token_type = TokenType.ROLE
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
-                return scope_node
+                return context_node
             else:
-                self.raise_syntax_error(token, f"Unexpected token: {token.value} in 'Scope' block")
+                self.raise_syntax_error(token, f"Unexpected token: {token.value} in 'Context' block")
 
-    def parse_example(self, token):
-        """Parse an Example block."""
-        example_node = ASTNode(token)
+    def parse_role(self, token):
+        """Parse a Role block."""
+        role_node = ASTNode(token)
 
         init_token = self.get_next_token()
         if init_token.type == TokenType.KEYWORD_TEXT:
-            example_node.add_child(self.parse_keyword_text(init_token))
+            role_node.add_child(self.parse_keyword_text(init_token))
             indent_token = self.get_next_token()
             if indent_token.type != TokenType.INDENT:
                 self.raise_syntax_error(token, "Expected indent after keyword description for " \
-                                        "'Example' block")
+                                        "'Role' block")
         elif init_token.type != TokenType.INDENT:
-            self.raise_syntax_error(token, "Expected description or indent for 'Example' block")
+            self.raise_syntax_error(token, "Expected description or indent for 'Role' block")
 
         while True:
             token = self.get_next_token()
             if token.type == TokenType.TEXT:
-                example_node.add_child(self.parse_text(token))
+                role_node.add_child(self.parse_text(token))
             elif token.type == TokenType.OUTDENT or token.type == TokenType.END_OF_FILE:
-                return example_node
+                return role_node
             else:
                 self.raise_syntax_error(token, f"Unexpected token: {token.value} in " \
-                                        "'Example' block")
+                                        "'Role' block")
 
     def parse_include(self):
         """Parse an Include block and load the included file."""

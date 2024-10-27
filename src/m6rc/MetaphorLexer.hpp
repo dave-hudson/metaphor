@@ -24,9 +24,9 @@ private:
     const std::map<std::string, TokenType> keyword_map = {
         {"Include:", TokenType::INCLUDE},
         {"Embed:", TokenType::EMBED},
-        {"Target:", TokenType::TARGET},
-        {"Scope:", TokenType::SCOPE},
-        {"Example:", TokenType::EXAMPLE}
+        {"Action:", TokenType::ACTION},
+        {"Context:", TokenType::CONTEXT},
+        {"Role:", TokenType::ROLE}
     };
 };
 

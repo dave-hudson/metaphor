@@ -1,5 +1,5 @@
-Target:
+Action:
     Test indentation processing
 
-     Scope:
+     Context:
         As a tester, I would like my tests to find problems, so my code works better

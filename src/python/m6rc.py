@@ -84,7 +84,7 @@ def recurse(node, section, out):
         out.write(node.value + '\n\n')
         return
 
-    if node.token_type in (TokenType.TARGET, TokenType.SCOPE, TokenType.EXAMPLE):
+    if node.token_type in (TokenType.ACTION, TokenType.CONTEXT, TokenType.ROLE):
         if node.child_nodes:
             child = node.child_nodes[0]
             if child.token_type == TokenType.KEYWORD_TEXT:
@@ -96,7 +96,7 @@ def recurse(node, section, out):
 
     index = 0
     for child in node.child_nodes:
-        if child.token_type in (TokenType.SCOPE, TokenType.EXAMPLE):
+        if child.token_type in (TokenType.CONTEXT, TokenType.ROLE):
             index += 1
 
         recurse(child, f"{section}.{index}", out)

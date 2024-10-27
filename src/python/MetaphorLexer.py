@@ -4,7 +4,7 @@ from Lexer import Lexer
 class MetaphorLexer(Lexer):
     """
     Lexer for handling the metaphor language with its specific syntax, including keywords like
-    Target, Scope, Example, and proper indentation handling.
+    Action, Context, Role, and proper indentation handling.
     """
     def __init__(self, filename, indent_spaces=4):
         """
@@ -18,9 +18,9 @@ class MetaphorLexer(Lexer):
         self.keyword_map = {
             "Include:": TokenType.INCLUDE,
             "Embed:": TokenType.EMBED,
-            "Target:": TokenType.TARGET,
-            "Scope:": TokenType.SCOPE,
-            "Example:": TokenType.EXAMPLE
+            "Action:": TokenType.ACTION,
+            "Context:": TokenType.CONTEXT,
+            "Role:": TokenType.ROLE
         }
         self.in_text_block = False
         self.indent_column = 1

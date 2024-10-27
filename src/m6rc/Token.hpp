@@ -12,9 +12,9 @@ enum class TokenType {
     EMBED,
     KEYWORD_TEXT,
     TEXT,
-    TARGET,
-    SCOPE,
-    EXAMPLE,
+    ACTION,
+    CONTEXT,
+    ROLE,
     BAD_INDENT,
     BAD_OUTDENT,
     END_OF_FILE

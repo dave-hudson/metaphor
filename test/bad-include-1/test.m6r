@@ -1,26 +1,26 @@
-Target:
+Action:
     I have a single page application website and want to pre-render all the pages so I can allow the website to be crawled by spiders that cannot render JavaScript.
 
-    Scope:
+    Context:
         Usage Information
 
-        Scope:
+        Context:
             If invoked with invalid parameters, display correct usage information.
-        Scope:
+        Context:
             Include a -h parameter to display a help message with all valid parameters and their usage.
 
         Include: test/bad-include-1/include.m6r
         Include: test/bad-include-1/include.m6r
 
-        Scope:
+        Context:
             Code quality
 
-            Scope:
+            Context:
                 Use JSDoc annotations for all functions.
-            Scope:
+            Context:
                 Use 4 spaces for indentation in the source code.
-            Scope:
+            Context:
                 Where any functions may throw errors, include try/catch blocks to handle those error conditions.
-            Scope:
+            Context:
                 For code style, do not use an "else" if the previous block in an if statement ends with a "return" statement.
 
